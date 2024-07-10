@@ -1,0 +1,48 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Minimal ping API server
+servers:
+  - url: http://localhost:8087/{basePath}
+    variables:
+      basePath:
+        default: api/v1
+  - url: https://cemayan.com/{basePath}
+    variables:
+      basePath:
+        default: api/v1
+paths:
+  /query:
+    get:
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: query
+      responses:
+        '200':
+          description: query response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+  /test/query:
+    get:
+      parameters:
+        - in: query
+          name: q
+          schema:
+            type: string
+          description: query
+      responses:
+        '200':
+          description: query response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SearchResponse'
+components:
+  schemas:
+    SearchResponse:
+      $ref: "../types/spec.yaml#/components/schemas/SearchResponse"
