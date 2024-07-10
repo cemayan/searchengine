@@ -109,9 +109,15 @@ func (t *trie) search(prefix string, root *trieNode, arr []string) []string {
 		arr = t.search(prefix, root.children[currentWord], nil)
 	} else {
 
-		t.traversalSearch(root.children[currentWord])
-		array := t.map2array(searchResults)
-		arr = append(arr, array...)
+		if root != nil {
+			n := root.children[currentWord]
+
+			if n != nil {
+				t.traversalSearch(root.children[currentWord])
+				array := t.map2array(searchResults)
+				arr = append(arr, array...)
+			}
+		}
 	}
 
 	return arr

@@ -1,0 +1,20 @@
+openapi: 3.0.0
+info:
+  version: 1.0.0
+  title: API server
+
+components:
+  schemas:
+    # base types
+    SearchResponse :
+      type: array
+      items:
+       type: string
+    Error:
+      type: object
+      required:
+        - msg
+      properties:
+        msg:
+          type: string
+
