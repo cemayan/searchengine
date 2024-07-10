@@ -104,19 +104,21 @@ func (t *trie) search(prefix string, root *trieNode, arr []string) []string {
 	searchCounter++
 	currentWord := prefix[0:searchCounter]
 
+	n := root.children[currentWord]
+
 	//This condition for reach the actual node
 	if searchCounter != len(prefix) {
-		arr = t.search(prefix, root.children[currentWord], nil)
+		if n != nil {
+			arr = t.search(prefix, n, nil)
+		}
 	} else {
 
-		if root != nil {
-			n := root.children[currentWord]
-
-			if n != nil {
-				t.traversalSearch(root.children[currentWord])
-				array := t.map2array(searchResults)
-				arr = append(arr, array...)
-			}
+		if n != nil {
+			// given word will be appended to result array
+			arr = append(arr, prefix)
+			t.traversalSearch(n)
+			array := t.map2array(searchResults)
+			arr = append(arr, array...)
 		}
 	}
 
