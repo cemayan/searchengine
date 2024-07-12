@@ -1,4 +1,4 @@
-package api
+package read
 
 import (
 	"github.com/gorilla/mux"
@@ -12,7 +12,7 @@ type Router struct {
 
 func NewRouter() *Router {
 	router := mux.NewRouter()
-	api := router.PathPrefix("/api/v1").Subrouter()
+	api := router.PathPrefix("/v1").Subrouter()
 	n := negroni.Classic() // Includes some default middlewares
 
 	return &Router{router: api, negroni: n}

@@ -6,6 +6,23 @@ info:
 components:
   schemas:
     # base types
+    ApiResponse:
+      type: object
+      properties:
+        msg:
+          type: object
+        code:
+          type: integer
+    Selection:
+      type: object
+      required:
+        - query
+        - selection
+      properties:
+        query:
+          type: string
+        selection:
+          type: string
     SearchResponse :
       type: array
       items:

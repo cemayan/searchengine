@@ -1,0 +1,35 @@
+openapi: "3.0.0"
+info:
+  version: 1.0.0
+  title: Minimal ping API server
+servers:
+  - url: http://localhost:8088/{basePath}
+    variables:
+      basePath:
+        default: v1
+  - url: https://cemayan.com/{basePath}
+    variables:
+      basePath:
+        default: v1
+paths:
+  /selection:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Selection"
+      responses:
+        '201':
+          description: selection response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
+components:
+  schemas:
+    ApiResponse:
+      $ref: "../../types/spec.yaml#/components/schemas/ApiResponse"
+    Selection:
+      $ref: "../../types/spec.yaml#/components/schemas/Selection"

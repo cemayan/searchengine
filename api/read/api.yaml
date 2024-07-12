@@ -6,11 +6,11 @@ servers:
   - url: http://localhost:8087/{basePath}
     variables:
       basePath:
-        default: api/v1
+        default: v1
   - url: https://cemayan.com/{basePath}
     variables:
       basePath:
-        default: api/v1
+        default: v1
 paths:
   /query:
     get:
@@ -45,4 +45,4 @@ paths:
 components:
   schemas:
     SearchResponse:
-      $ref: "../types/spec.yaml#/components/schemas/SearchResponse"
+      $ref: "../../types/spec.yaml#/components/schemas/SearchResponse"

@@ -1,4 +1,4 @@
-package api
+package read
 
 import (
 	"context"
@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-//go:generate oapi-codegen --config cfg.yaml spec.yaml
+//go:generate oapi-codegen --config cfg.yaml api.yaml
 
 // Server struct
 type Server struct {

@@ -3,7 +3,8 @@ package main
 import (
 	"context"
 	"errors"
-	"github.com/cemayan/searchengine/api"
+	"github.com/cemayan/searchengine/api/read"
+
 	"github.com/cemayan/searchengine/internal/config"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -14,11 +15,11 @@ import (
 )
 
 func init() {
-	config.Init()
+	config.Init(config.ReadApiConfig)
 }
 
 func main() {
-	server := api.NewServer()
+	server := read.NewServer()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 

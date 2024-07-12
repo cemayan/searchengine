@@ -20,13 +20,14 @@ type GeneralConfig struct {
 }
 
 var (
-	ConfigName  = "config"
-	ConfigPaths = "configs"
+	ReadApiConfig  = "read/config"
+	WriteApiConfig = "write/config"
+	ConfigPaths    = "configs"
 )
 
 // Init unmarshalls the yaml
-func Init() {
-	yamlFile := readYaml(ConfigName, ConfigPaths)
+func Init(configName string) {
+	yamlFile := readYaml(configName, ConfigPaths)
 	err := yaml.Unmarshal(yamlFile, &config)
 	if err != nil {
 		fmt.Printf("Unmarshal: %v", err)

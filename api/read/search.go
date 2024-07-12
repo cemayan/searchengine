@@ -1,7 +1,8 @@
-package api
+package read
 
 import (
 	"encoding/json"
+	"github.com/cemayan/searchengine/common"
 	"github.com/cemayan/searchengine/trie"
 	"github.com/cemayan/searchengine/types"
 	"net/http"
@@ -11,7 +12,7 @@ func (srv *Server) GetQuery(w http.ResponseWriter, r *http.Request, params GetQu
 
 	if params.Q == nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(getError("query parameter is required"))
+		w.Write(common.GetError("query parameter is required"))
 		return
 	}
 }
@@ -21,7 +22,7 @@ func (srv *Server) GetTestQuery(w http.ResponseWriter, r *http.Request, params G
 
 	if params.Q == nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(getError("query parameter is required"))
+		w.Write(common.GetError("query parameter is required"))
 		return
 	}
 
@@ -35,6 +36,6 @@ func (srv *Server) GetTestQuery(w http.ResponseWriter, r *http.Request, params G
 
 	if ok := json.NewEncoder(w).Encode(resp); ok != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write(getError("json encode failed"))
+		w.Write(common.GetError("json encode failed"))
 	}
 }
