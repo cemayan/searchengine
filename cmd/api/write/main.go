@@ -31,7 +31,7 @@ func main() {
 		}
 	}()
 
-	logrus.Infof("Server started on port: %v\n", config.GetConfig().Serve.Port)
+	logrus.Infof("Server started on port: %v\n", config.GetConfig(config.WriteApiConfig).Serve.Port)
 
 	<-done
 	logrus.Infoln("Server stopped")

@@ -6,7 +6,11 @@ import (
 )
 
 // config is used to reach config  whenever what you want
-var config GeneralConfig
+var config map[string]GeneralConfig
+
+func init() {
+	config = make(map[string]GeneralConfig)
+}
 
 type Serve struct {
 	Port int `yaml:"port"`
@@ -20,21 +24,23 @@ type GeneralConfig struct {
 }
 
 var (
-	ReadApiConfig  = "read/config"
-	WriteApiConfig = "write/config"
+	ReadApiConfig  = "read"
+	WriteApiConfig = "write"
 	ConfigPaths    = "configs"
 )
 
 // Init unmarshalls the yaml
-func Init(configName string) {
-	yamlFile := readYaml(configName, ConfigPaths)
-	err := yaml.Unmarshal(yamlFile, &config)
+func Init(projectName string) {
+	var genConfig GeneralConfig
+	yamlFile := readYaml(fmt.Sprintf("%s/config", projectName), ConfigPaths)
+	err := yaml.Unmarshal(yamlFile, &genConfig)
+	config[projectName] = genConfig
 	if err != nil {
 		fmt.Printf("Unmarshal: %v", err)
 	}
 }
 
 // GetConfig returns the config
-func GetConfig() GeneralConfig {
-	return config
+func GetConfig(projectName string) GeneralConfig {
+	return config[projectName]
 }
