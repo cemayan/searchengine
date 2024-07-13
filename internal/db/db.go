@@ -9,7 +9,7 @@ import (
 var Db DB
 
 type DB interface {
-	Get(key string, params []string) (string, error)
+	Get(key string, params *[]string) (string, error)
 	Set(key string, value interface{}, params *[]string) error
 }
 

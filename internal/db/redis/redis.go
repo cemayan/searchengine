@@ -14,8 +14,17 @@ type Redis struct {
 	client *redis.Client
 }
 
-func (r Redis) Get(key string, params []string) (string, error) {
-	val, err := r.client.JSONGet(ctx, fmt.Sprintf("%s:%s", constants.RedisJsonPrefix, key), params...).Result()
+func (r Redis) Get(key string, params *[]string) (string, error) {
+
+	currentPath := params
+	if params == nil {
+		path := &[]string{}
+		*path = append(*path, "$")
+		// it means whole json
+		currentPath = path
+	}
+
+	val, err := r.client.JSONGet(ctx, fmt.Sprintf("%s:%s", constants.RedisJsonPrefix, key), *currentPath...).Result()
 	if err != nil {
 		return "", err
 	}
