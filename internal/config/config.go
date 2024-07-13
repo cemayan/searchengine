@@ -16,17 +16,24 @@ type Serve struct {
 	Port int `yaml:"port"`
 }
 
+type Db struct {
+	Name string `yaml:"name"`
+	Addr string `yaml:"addr"`
+	Port int    `yaml:"port"`
+	User string `yaml:"user"`
+	Pass string `yaml:"pass"`
+}
+
 // GeneralConfig represents parsed yaml values
 type GeneralConfig struct {
 	Version     int    `yaml:"version"`
 	Environment string `yaml:"environment"`
 	Serve       Serve  `yaml:"serve"`
+	Db          Db     `yaml:"db"`
 }
 
 var (
-	ReadApiConfig  = "read"
-	WriteApiConfig = "write"
-	ConfigPaths    = "configs"
+	ConfigPaths = "configs"
 )
 
 // Init unmarshalls the yaml

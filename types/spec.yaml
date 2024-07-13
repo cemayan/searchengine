@@ -9,10 +9,19 @@ components:
     ApiResponse:
       type: object
       properties:
-        msg:
+        data:
           type: object
+        msg:
+          type: string
         code:
           type: integer
+    RecordRequest:
+      type: object
+      required:
+        - data
+      properties:
+        data:
+          type: string
     Selection:
       type: object
       required:

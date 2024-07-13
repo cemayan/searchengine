@@ -6,12 +6,18 @@ package types
 // ApiResponse defines model for ApiResponse.
 type ApiResponse struct {
 	Code *int                    `json:"code,omitempty"`
-	Msg  *map[string]interface{} `json:"msg,omitempty"`
+	Data *map[string]interface{} `json:"data,omitempty"`
+	Msg  *string                 `json:"msg,omitempty"`
 }
 
 // Error defines model for Error.
 type Error struct {
 	Msg string `json:"msg"`
+}
+
+// RecordRequest defines model for RecordRequest.
+type RecordRequest struct {
+	Data string `json:"data"`
 }
 
 // SearchResponse defines model for SearchResponse.

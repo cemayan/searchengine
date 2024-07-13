@@ -2,3 +2,6 @@ version: 1
 environment: dev
 serve:
   port: 8088
+db:
+  name: "redis"
+  addr: "localhost:6379"

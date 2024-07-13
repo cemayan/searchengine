@@ -3,6 +3,7 @@ package write
 import (
 	"context"
 	"fmt"
+	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -38,7 +39,7 @@ func (srv *Server) Shutdown(ctx context.Context) error {
 
 func NewServer() Server {
 	server := &http.Server{
-		Addr:         fmt.Sprintf(":%d", config.GetConfig(config.WriteApiConfig).Serve.Port),
+		Addr:         fmt.Sprintf(":%d", config.GetConfig(constants.WriteApiConfig).Serve.Port),
 		WriteTimeout: time.Second * 300,
 		ReadTimeout:  time.Second * 300,
 		IdleTimeout:  time.Second * 300,

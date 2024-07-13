@@ -19,6 +19,7 @@ type Trie interface {
 	SetRoot(root *trieNode)
 	SearchByPrefix(prefix string) []string
 	DeleteByPrefix(prefix string)
+	ConvertForIndexing(data string) map[string]map[string]int
 }
 
 type trie struct {

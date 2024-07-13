@@ -14,14 +14,23 @@ import (
 // ApiResponse defines model for ApiResponse.
 type ApiResponse = externalRef0.ApiResponse
 
+// RecordRequest defines model for RecordRequest.
+type RecordRequest = externalRef0.RecordRequest
+
 // Selection defines model for Selection.
 type Selection = externalRef0.Selection
+
+// PostRecordJSONRequestBody defines body for PostRecord for application/json ContentType.
+type PostRecordJSONRequestBody = RecordRequest
 
 // PostSelectionJSONRequestBody defines body for PostSelection for application/json ContentType.
 type PostSelectionJSONRequestBody = Selection
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+
+	// (POST /record)
+	PostRecord(w http.ResponseWriter, r *http.Request)
 
 	// (POST /selection)
 	PostSelection(w http.ResponseWriter, r *http.Request)
@@ -35,6 +44,21 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// PostRecord operation middleware
+func (siw *ServerInterfaceWrapper) PostRecord(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.PostRecord(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
 
 // PostSelection operation middleware
 func (siw *ServerInterfaceWrapper) PostSelection(w http.ResponseWriter, r *http.Request) {
@@ -163,6 +187,8 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 		HandlerMiddlewares: options.Middlewares,
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
+
+	r.HandleFunc(options.BaseURL+"/record", wrapper.PostRecord).Methods("POST")
 
 	r.HandleFunc(options.BaseURL+"/selection", wrapper.PostSelection).Methods("POST")
 

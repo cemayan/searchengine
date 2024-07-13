@@ -12,6 +12,21 @@ servers:
       basePath:
         default: v1
 paths:
+  /record:
+    post:
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RecordRequest"
+      responses:
+        '201':
+          description: record response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiResponse'
   /selection:
     post:
       requestBody:
@@ -33,3 +48,5 @@ components:
       $ref: "../../types/spec.yaml#/components/schemas/ApiResponse"
     Selection:
       $ref: "../../types/spec.yaml#/components/schemas/Selection"
+    RecordRequest:
+      $ref: "../../types/spec.yaml#/components/schemas/RecordRequest"

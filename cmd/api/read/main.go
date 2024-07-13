@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"github.com/cemayan/searchengine/api/read"
+	"github.com/cemayan/searchengine/constants"
+	"github.com/cemayan/searchengine/internal/db"
 
 	"github.com/cemayan/searchengine/internal/config"
 	"github.com/sirupsen/logrus"
@@ -15,7 +17,8 @@ import (
 )
 
 func init() {
-	config.Init(config.ReadApiConfig)
+	config.Init(constants.ReadApiConfig)
+	db.Init(constants.ReadApiConfig)
 }
 
 func main() {
@@ -32,7 +35,7 @@ func main() {
 		}
 	}()
 
-	logrus.Infof("Server started on port: %v\n", config.GetConfig(config.ReadApiConfig).Serve.Port)
+	logrus.Infof("Server started on port: %v\n", config.GetConfig(constants.ReadApiConfig).Serve.Port)
 
 	<-done
 	logrus.Infoln("Server stopped")
