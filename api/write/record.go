@@ -25,22 +25,40 @@ func (srv *Server) PostRecord(w http.ResponseWriter, r *http.Request) {
 	_trie := trie.New()
 	convertedData := _trie.ConvertForIndexing(rec.Data)
 
-	var errKeys []string
-
 	for k := range convertedData {
-		recordJsonStr, _ := json.Marshal(convertedData[k])
-		err := db.Db.Set(k, recordJsonStr, nil)
-		if err != nil {
-			errKeys = append(errKeys, k)
-			continue
-		}
-	}
 
-	if len(errKeys) > 0 {
-		logrus.Error(errKeys)
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write(common.GetError("an error occurred"))
+		var err error
+
+		val := convertedData[k]
+
+		foundedRecords, err := db.Db.Get(k, nil)
+		if err != nil {
+			return
+		}
+
+		if foundedRecords != "" {
+			var convertedStr []interface{}
+			err = json.Unmarshal([]byte(foundedRecords), &convertedStr)
+
+			resultMap := convertedStr[0]
+			prevMap := resultMap.(map[string]interface{})
+
+			for k, _ := range val {
+				if _, ok := prevMap[k]; !ok {
+					prevMap[k] = 0
+				}
+			}
+
+			recordJsonStr, _ := json.Marshal(prevMap)
+			err = db.Db.Set(k, recordJsonStr, nil)
+		} else {
+			recordJsonStr, _ := json.Marshal(val)
+			err = db.Db.Set(k, recordJsonStr, nil)
+		}
+
+		if err != nil {
+			logrus.Error(err)
+		}
 	}
 
 	msg := fmt.Sprintf("%s record added to database successfully", rec.Data)

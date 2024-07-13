@@ -34,7 +34,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/Selection"
+              $ref: "#/components/schemas/SelectionRequest"
       responses:
         '201':
           description: selection response
@@ -46,7 +46,7 @@ components:
   schemas:
     ApiResponse:
       $ref: "../../types/spec.yaml#/components/schemas/ApiResponse"
-    Selection:
-      $ref: "../../types/spec.yaml#/components/schemas/Selection"
+    SelectionRequest:
+      $ref: "../../types/spec.yaml#/components/schemas/SelectionRequest"
     RecordRequest:
       $ref: "../../types/spec.yaml#/components/schemas/RecordRequest"

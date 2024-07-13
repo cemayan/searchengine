@@ -23,8 +23,8 @@ type RecordRequest struct {
 // SearchResponse defines model for SearchResponse.
 type SearchResponse = []string
 
-// Selection defines model for Selection.
-type Selection struct {
+// SelectionRequest defines model for SelectionRequest.
+type SelectionRequest struct {
 	Query     string `json:"query"`
 	Selection string `json:"selection"`
 }

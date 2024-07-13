@@ -22,7 +22,7 @@ components:
       properties:
         data:
           type: string
-    Selection:
+    SelectionRequest:
       type: object
       required:
         - query

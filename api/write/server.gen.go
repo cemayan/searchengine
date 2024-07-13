@@ -17,14 +17,14 @@ type ApiResponse = externalRef0.ApiResponse
 // RecordRequest defines model for RecordRequest.
 type RecordRequest = externalRef0.RecordRequest
 
-// Selection defines model for Selection.
-type Selection = externalRef0.Selection
+// SelectionRequest defines model for SelectionRequest.
+type SelectionRequest = externalRef0.SelectionRequest
 
 // PostRecordJSONRequestBody defines body for PostRecord for application/json ContentType.
 type PostRecordJSONRequestBody = RecordRequest
 
 // PostSelectionJSONRequestBody defines body for PostSelection for application/json ContentType.
-type PostSelectionJSONRequestBody = Selection
+type PostSelectionJSONRequestBody = SelectionRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
