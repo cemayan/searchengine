@@ -1,6 +1,11 @@
 package trie
 
+import "strings"
+
 func (t *trie) ConvertForIndexing(data string) map[string]map[string]int {
+
+	data = strings.ToLower(data)
+	data = strings.TrimSpace(data)
 
 	t.Insert(data)
 

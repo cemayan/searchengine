@@ -1,7 +1,9 @@
 package trie
 
+import "strings"
+
 const (
-	DesirableDepth = 5
+	DesirableDepth = 100
 )
 
 var (
@@ -33,7 +35,10 @@ type trieNode struct {
 
 // Insert inserts new word to trie
 func (t *trie) Insert(word string) {
-	t.insert(word, t.root)
+	lower := strings.ToLower(word)
+	last := strings.TrimSpace(lower)
+
+	t.insert(last, t.root)
 	// For another insert operation insertCounter must be reset.
 	insertCounter = 0
 }
