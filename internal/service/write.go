@@ -99,9 +99,18 @@ func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 }
 
 func (ws *WriteService) increaseValue(prevMap map[string]interface{}, rec types.SelectionRequest) error {
+
+	_db := constants.Str2Db[config.GetConfig(ws.ProjectName).Db.SelectedDb.Read]
+
 	if _, ok := prevMap[rec.SelectedKey]; ok {
-		prevCounter := prevMap[rec.SelectedKey].(float64)
-		prevMap[rec.SelectedKey] = prevCounter + 1
+
+		if _db == constants.Redis {
+			flt := prevMap[rec.SelectedKey].(float64)
+			prevMap[rec.SelectedKey] = int(flt) + 1
+		} else if _db == constants.MongoDb {
+			i32 := prevMap[rec.SelectedKey].(int32)
+			prevMap[rec.SelectedKey] = int(i32) + 1
+		}
 
 		return db.SelectedDb(ws.ProjectName, constants.Write).Set(rec.Query, prevMap, nil)
 	} else {

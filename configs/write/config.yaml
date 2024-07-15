@@ -4,8 +4,8 @@ serve:
   port: 8088
 db:
   selectedDb:
-    read: redis
-    write: redis
+    read: mongodb
+    write: mongodb
   cache:
     name: "redis"
     addr: "localhost:6379"
