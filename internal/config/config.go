@@ -37,12 +37,22 @@ type DbConfig struct {
 	Pass string `yaml:"pass"`
 }
 
+type Scheduler struct {
+	Enabled bool `yaml:"enabled"`
+}
+
+type Cache struct {
+	Enabled bool `yaml:"enabled"`
+}
+
 // GeneralConfig represents parsed yaml values
 type GeneralConfig struct {
-	Version     int    `yaml:"version"`
-	Environment string `yaml:"environment"`
-	Serve       Serve  `yaml:"serve"`
-	Db          Db     `yaml:"db"`
+	Version     int       `yaml:"version"`
+	Environment string    `yaml:"environment"`
+	Serve       Serve     `yaml:"serve"`
+	Db          Db        `yaml:"db"`
+	Scheduler   Scheduler `yaml:"scheduler"`
+	Cache       Cache     `yaml:"cache"`
 }
 
 var (

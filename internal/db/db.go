@@ -15,10 +15,12 @@ func init() {
 	dbMap := make(map[constants.Project]map[constants.Db]DB)
 	dbMap[constants.ReadApi] = make(map[constants.Db]DB)
 	dbMap[constants.WriteApi] = make(map[constants.Db]DB)
+	dbMap[constants.Scheduler] = make(map[constants.Db]DB)
 	Db = dbMap
 }
 
 type DB interface {
+	GetAll() interface{}
 	Get(key string, params *[]string) (interface{}, error)
 	Set(key string, value interface{}, params *[]string) error
 }
@@ -34,29 +36,39 @@ func SelectedDb(project constants.Project, dbType constants.DbType) DB {
 	}
 
 	return nil
-
 }
 
 func Init(projectName constants.Project) {
 	db := config.GetConfig(projectName).Db
-	if db.Cache.Name == constants.Db2Str[constants.Redis] {
+	schedulerConf := config.GetConfig(projectName).Scheduler
+	var cache *redis.Redis
+
+	if config.GetConfig(projectName).Cache.Enabled {
+		cache = redis.New(projectName)
+	}
+
+	if schedulerConf.Enabled {
 		Db[projectName][constants.Redis] = redis.New(projectName)
-	}
+		Db[projectName][constants.MongoDb] = mongodb.New(projectName, cache)
+	} else {
+		if db.Cache.Name == constants.Db2Str[constants.Redis] {
+			Db[projectName][constants.Redis] = redis.New(projectName)
+		}
 
-	if db.Persistent.Name == constants.Db2Str[constants.MongoDb] {
-		Db[projectName][constants.MongoDb] = mongodb.New(projectName)
-	}
+		if db.Persistent.Name == constants.Db2Str[constants.MongoDb] {
+			Db[projectName][constants.MongoDb] = mongodb.New(projectName, cache)
+		}
 
-	if db.SelectedDb.Read != "" {
-		logrus.Println(fmt.Sprintf("%s initialized for read operations", db.SelectedDb.Read))
-	}
+		if db.SelectedDb.Read != "" {
+			logrus.Println(fmt.Sprintf("%s initialized for read operations", db.SelectedDb.Read))
+		}
 
-	if db.SelectedDb.Write != "" {
-		logrus.Println(fmt.Sprintf("%s initialized for write operations", db.SelectedDb.Write))
+		if db.SelectedDb.Write != "" {
+			logrus.Println(fmt.Sprintf("%s initialized for write operations", db.SelectedDb.Write))
+		}
 	}
 
 	if len(Db) == 0 {
 		panic("there is no cache/persistent db")
 	}
-
 }

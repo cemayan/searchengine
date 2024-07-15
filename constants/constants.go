@@ -24,9 +24,10 @@ type Project int
 const (
 	ReadApi Project = iota + 1
 	WriteApi
+	Scheduler
 )
 
-var ProjectMap = map[Project]string{ReadApi: "read", WriteApi: "write"}
+var ProjectMap = map[Project]string{ReadApi: "read", WriteApi: "write", Scheduler: "scheduler"}
 
 const (
 	RedisJsonPrefix = "record"

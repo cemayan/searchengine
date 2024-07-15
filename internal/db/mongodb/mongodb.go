@@ -5,6 +5,8 @@ import (
 	"errors"
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
+	"github.com/cemayan/searchengine/internal/db/redis"
+	"github.com/sirupsen/logrus"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -14,6 +16,20 @@ var ctx = context.Background()
 
 type MongoDB struct {
 	client *mongo.Client
+	redis  *redis.Redis
+}
+
+func (r MongoDB) GetAll() interface{} {
+	batchSize := int32(100)
+
+	collections, err := r.client.Database(constants.MongoDbDatabase).ListCollectionNames(ctx, bson.D{}, &options.ListCollectionsOptions{
+		BatchSize: &batchSize,
+	})
+	if err != nil {
+		return nil
+	}
+
+	return collections
 }
 
 func (r MongoDB) Get(key string, params *[]string) (interface{}, error) {
@@ -42,10 +58,19 @@ func (r MongoDB) Set(key string, value interface{}, params *[]string) error {
 		return err
 	}
 
+	if r.redis != nil {
+		go func() {
+			err := r.redis.Set(key, value, params)
+			if err != nil {
+				logrus.Errorln("redis set err", err)
+			}
+		}()
+	}
+
 	return nil
 }
 
-func New(projectName constants.Project) *MongoDB {
+func New(projectName constants.Project, redis *redis.Redis) *MongoDB {
 	cfg := config.GetConfig(projectName)
 
 	cli, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Db.Persistent.Uri))
@@ -54,5 +79,5 @@ func New(projectName constants.Project) *MongoDB {
 		panic(errors.New("an error occurred while connecting to the database"))
 	}
 
-	return &MongoDB{client: cli}
+	return &MongoDB{client: cli, redis: redis}
 }

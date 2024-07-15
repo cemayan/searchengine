@@ -14,6 +14,11 @@ type Redis struct {
 	client *redis.Client
 }
 
+func (r Redis) GetAll() interface{} {
+	//TODO implement me
+	panic("implement me")
+}
+
 func (r Redis) Get(key string, params *[]string) (interface{}, error) {
 
 	currentPath := params

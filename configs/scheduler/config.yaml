@@ -2,12 +2,15 @@ version: 1
 environment: dev
 serve:
   port: 8087
+scheduler:
+  enabled: true
 db:
   selectedDb:
-    read: redis
+    read: mongodb
+    write: redis
   cache:
     name: "redis"
     addr: "localhost:6379"
   persistent:
     name: "mongodb"
-    uri: "mongodb://localhost:27017"
+    uri: "mongodb://localhost:27017/searchengine"
