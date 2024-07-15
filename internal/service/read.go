@@ -1,9 +1,8 @@
 package service
 
 import (
-	"encoding/json"
-	"errors"
 	"github.com/cemayan/searchengine/constants"
+	"github.com/cemayan/searchengine/internal/config"
 	"github.com/cemayan/searchengine/internal/db"
 	"github.com/cemayan/searchengine/types"
 	"sort"
@@ -11,7 +10,7 @@ import (
 
 type ReadService struct {
 	ProjectName constants.Project
-	resultMap   map[string]float64
+	resultMap   map[string]int
 	result      *types.SearchResponse
 }
 
@@ -36,28 +35,39 @@ func (rs *ReadService) Start(data *string) (*types.SearchResponse, error) {
 		return nil, nil
 	}
 
-	if foundedRecords != "" {
-		var convertedStr []interface{}
-		err = json.Unmarshal([]byte(foundedRecords), &convertedStr)
+	db := constants.Str2Db[config.GetConfig(rs.ProjectName).Db.SelectedDb.Read]
 
-		if err != nil {
-			return nil, errors.New("json unmarshall failed")
+	var genericMap map[string]interface{}
+
+	if db == constants.Redis {
+		castedFoundedRecords := foundedRecords.([]interface{})
+
+		if len(castedFoundedRecords) != 0 {
+			genericMap = castedFoundedRecords[0].(map[string]interface{})
 		}
-
-		genericMap := convertedStr[0].(map[string]interface{})
-
-		intMap := map[string]float64{}
-		for key, value := range genericMap {
-			intMap[key] = value.(float64)
-		}
-
-		rs.resultMap = intMap
-		rs.sort()
-
+	} else if db == constants.MongoDb {
+		genericMap = foundedRecords.(map[string]interface{})
 	}
+
+	intMap := map[string]int{}
+	for key, value := range genericMap {
+		if key != "_id" {
+			if db == constants.Redis {
+				flt := value.(float64)
+				intMap[key] = int(flt)
+			} else if db == constants.MongoDb {
+				i32 := value.(int32)
+				intMap[key] = int(i32)
+			}
+		}
+	}
+
+	rs.resultMap = intMap
+	rs.sort()
+
 	return rs.result, nil
 }
 
 func NewReadService(projectName constants.Project) *ReadService {
-	return &ReadService{projectName, make(map[string]float64), nil}
+	return &ReadService{projectName, make(map[string]int), nil}
 }

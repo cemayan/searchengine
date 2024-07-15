@@ -14,7 +14,7 @@ BIN_FOLDER=bin
 
 
 
-dev: localredis # Start all services
+dev: localredis localmongogb # Start all services
 
 
 .PHONY: localredis

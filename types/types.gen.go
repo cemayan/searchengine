@@ -25,6 +25,6 @@ type SearchResponse = []string
 
 // SelectionRequest defines model for SelectionRequest.
 type SelectionRequest struct {
-	Query     string `json:"query"`
-	Selection string `json:"selection"`
+	Query       string `json:"query"`
+	SelectedKey string `json:"selectedKey"`
 }

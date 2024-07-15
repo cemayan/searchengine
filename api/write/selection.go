@@ -33,7 +33,7 @@ func (srv *Server) PostSelection(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	msg := fmt.Sprintf("record %s selected", rec.Selection)
+	msg := fmt.Sprintf("record %s selected", rec.SelectedKey)
 	apiResp := types.ApiResponse{Msg: &msg}
 
 	if ok := json.NewEncoder(w).Encode(apiResp); ok != nil {

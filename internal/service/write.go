@@ -1,9 +1,9 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/cemayan/searchengine/constants"
+	"github.com/cemayan/searchengine/internal/config"
 	"github.com/cemayan/searchengine/internal/db"
 	"github.com/cemayan/searchengine/trie"
 	"github.com/cemayan/searchengine/types"
@@ -46,35 +46,50 @@ func (ws *WriteService) prepareData(data string) {
 
 }
 
+func (ws *WriteService) mergeTheMaps(prevMap map[string]interface{}, currentMap map[string]int) map[string]interface{} {
+	for k, _ := range currentMap {
+		if _, ok := prevMap[k]; !ok {
+			prevMap[k] = 0
+		}
+	}
+	return prevMap
+}
 func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 	for k := range records {
 
 		var err error
-		val := records[k]
+		currentMap := records[k]
 
 		foundedRecords, err := db.SelectedDb(ws.ProjectName, constants.Read).Get(k, nil)
 		if err != nil {
+			logrus.Error(err)
 			return
 		}
 
-		if foundedRecords != "" {
-			var convertedStr []interface{}
-			err = json.Unmarshal([]byte(foundedRecords), &convertedStr)
+		_db := constants.Str2Db[config.GetConfig(ws.ProjectName).Db.SelectedDb.Read]
 
-			resultMap := convertedStr[0]
-			prevMap := resultMap.(map[string]interface{})
+		prevMap := map[string]interface{}{}
 
-			for k, _ := range val {
-				if _, ok := prevMap[k]; !ok {
-					prevMap[k] = 0
-				}
+		if _db == constants.Redis {
+
+			castedFoundedRecords := foundedRecords.([]interface{})
+
+			if len(castedFoundedRecords) > 0 {
+				prevMap = castedFoundedRecords[0].(map[string]interface{})
+				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, ws.mergeTheMaps(prevMap, currentMap), nil)
+			} else {
+				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, currentMap, nil)
 			}
 
-			recordJsonStr, _ := json.Marshal(prevMap)
-			err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, recordJsonStr, nil)
-		} else {
-			recordJsonStr, _ := json.Marshal(val)
-			err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, recordJsonStr, nil)
+		} else if _db == constants.MongoDb {
+
+			if foundedRecords != nil {
+				prevMap = foundedRecords.(map[string]interface{})
+				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, ws.mergeTheMaps(prevMap, currentMap), nil)
+			} else {
+				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, currentMap, nil)
+			}
+
 		}
 
 		if err != nil {
@@ -83,29 +98,39 @@ func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 	}
 }
 
+func (ws *WriteService) increaseValue(prevMap map[string]interface{}, rec types.SelectionRequest) error {
+	if _, ok := prevMap[rec.SelectedKey]; ok {
+		prevCounter := prevMap[rec.SelectedKey].(float64)
+		prevMap[rec.SelectedKey] = prevCounter + 1
+
+		return db.SelectedDb(ws.ProjectName, constants.Write).Set(rec.Query, prevMap, nil)
+	} else {
+		return errors.New("record not found")
+	}
+	return nil
+}
+
 func (ws *WriteService) Selection(rec types.SelectionRequest) error {
 	foundedRecords, err := db.SelectedDb(ws.ProjectName, constants.Read).Get(rec.Query, nil)
 	if err != nil {
 		return nil
 	}
 
-	if foundedRecords != "" {
-		var convertedStr []interface{}
-		err = json.Unmarshal([]byte(foundedRecords), &convertedStr)
+	_db := constants.Str2Db[config.GetConfig(ws.ProjectName).Db.SelectedDb.Read]
 
-		resultMap := convertedStr[0]
-		prevMap := resultMap.(map[string]interface{})
+	if _db == constants.Redis {
 
-		if _, ok := prevMap[rec.Selection]; ok {
-			prevCounter := prevMap[rec.Selection].(float64)
-			prevMap[rec.Selection] = prevCounter + 1
+		castedFoundedRecords := foundedRecords.([]interface{})
 
-			recordJsonStr, _ := json.Marshal(prevMap)
-			err = db.SelectedDb(ws.ProjectName, constants.Write).Set(rec.Query, recordJsonStr, nil)
-		} else {
-			return errors.New("record not found")
+		if len(castedFoundedRecords) > 0 {
+			prevMap := castedFoundedRecords[0].(map[string]interface{})
+			err = ws.increaseValue(prevMap, rec)
 		}
-
+	} else if _db == constants.MongoDb {
+		if foundedRecords != nil {
+			prevMap := foundedRecords.(map[string]interface{})
+			err = ws.increaseValue(prevMap, rec)
+		}
 	}
 
 	return nil

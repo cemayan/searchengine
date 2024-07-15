@@ -11,4 +11,4 @@ db:
     addr: "localhost:6379"
   persistent:
     name: "mongodb"
-    uri: "mongodb://localhost:27017"
+    uri: "mongodb://localhost:27017/searchengine"

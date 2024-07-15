@@ -30,4 +30,5 @@ var ProjectMap = map[Project]string{ReadApi: "read", WriteApi: "write"}
 
 const (
 	RedisJsonPrefix = "record"
+	MongoDbDatabase = "searchengine"
 )

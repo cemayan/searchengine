@@ -5,45 +5,54 @@ import (
 	"errors"
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
+	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
-	"time"
 )
+
+var ctx = context.Background()
 
 type MongoDB struct {
 	client *mongo.Client
-	ctx    context.Context
 }
 
-func (r MongoDB) Get(key string, params *[]string) (string, error) {
-	defer func() {
-		if err := r.client.Disconnect(r.ctx); err != nil {
-			panic(err)
-		}
-	}()
+func (r MongoDB) Get(key string, params *[]string) (interface{}, error) {
+	var mm map[string]interface{}
+	err := r.client.Database(constants.MongoDbDatabase).Collection(key).FindOne(ctx, bson.M{}).Decode(&mm)
 
-	return "", nil
+	if err != nil {
+		if err.Error() != "document is nil" || err.Error() != "mongo: no documents in result" {
+			return nil, nil
+		} else {
+			return nil, err
+		}
+	}
+
+	return mm, nil
 }
 
 func (r MongoDB) Set(key string, value interface{}, params *[]string) error {
-	defer func() {
-		if err := r.client.Disconnect(r.ctx); err != nil {
-			panic(err)
-		}
-	}()
+
+	upsert := true
+	update := bson.D{{"$set", value}}
+
+	_, err := r.client.Database(constants.MongoDbDatabase).Collection(key).UpdateOne(ctx, bson.D{}, update,
+		&options.UpdateOptions{Upsert: &upsert})
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func New(projectName constants.Project) *MongoDB {
 	cfg := config.GetConfig(projectName)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 	cli, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Db.Persistent.Uri))
 
 	if err != nil {
 		panic(errors.New("an error occurred while connecting to the database"))
 	}
 
-	return &MongoDB{client: cli, ctx: ctx}
+	return &MongoDB{client: cli}
 }

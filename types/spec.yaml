@@ -26,11 +26,11 @@ components:
       type: object
       required:
         - query
-        - selection
+        - selectedKey
       properties:
         query:
           type: string
-        selection:
+        selectedKey:
           type: string
     SearchResponse :
       type: array

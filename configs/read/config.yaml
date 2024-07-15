@@ -4,7 +4,10 @@ serve:
   port: 8087
 db:
   selectedDb:
-    read: redis
+    read: mongodb
   cache:
     name: "redis"
     addr: "localhost:6379"
+  persistent:
+    name: "mongodb"
+    uri: "mongodb://localhost:27017"
