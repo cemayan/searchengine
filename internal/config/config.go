@@ -2,22 +2,35 @@ package config
 
 import (
 	"fmt"
+	"github.com/cemayan/searchengine/constants"
 	"gopkg.in/yaml.v3"
 )
 
 // config is used to reach config  whenever what you want
-var config map[string]GeneralConfig
+var config map[constants.Project]GeneralConfig
 
 func init() {
-	config = make(map[string]GeneralConfig)
+	config = make(map[constants.Project]GeneralConfig)
 }
 
 type Serve struct {
 	Port int `yaml:"port"`
 }
 
+type SelectedDb struct {
+	Read  string `yaml:"read"`
+	Write string `yaml:"write"`
+}
+
 type Db struct {
+	Cache      DbConfig   `yaml:"cache"`
+	Persistent DbConfig   `yaml:"persistent"`
+	SelectedDb SelectedDb `yaml:"selectedDb"`
+}
+
+type DbConfig struct {
 	Name string `yaml:"name"`
+	Uri  string `yaml:"uri"`
 	Addr string `yaml:"addr"`
 	Port int    `yaml:"port"`
 	User string `yaml:"user"`
@@ -37,9 +50,9 @@ var (
 )
 
 // Init unmarshalls the yaml
-func Init(projectName string) {
+func Init(projectName constants.Project) {
 	var genConfig GeneralConfig
-	yamlFile := readYaml(fmt.Sprintf("%s/config", projectName), ConfigPaths)
+	yamlFile := readYaml(fmt.Sprintf("%s/config", constants.ProjectMap[projectName]), ConfigPaths)
 	err := yaml.Unmarshal(yamlFile, &genConfig)
 	config[projectName] = genConfig
 	if err != nil {
@@ -48,6 +61,6 @@ func Init(projectName string) {
 }
 
 // GetConfig returns the config
-func GetConfig(projectName string) GeneralConfig {
+func GetConfig(projectName constants.Project) GeneralConfig {
 	return config[projectName]
 }

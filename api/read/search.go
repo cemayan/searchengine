@@ -3,6 +3,7 @@ package read
 import (
 	"encoding/json"
 	"github.com/cemayan/searchengine/common"
+	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/service"
 	"github.com/cemayan/searchengine/trie"
 	"github.com/cemayan/searchengine/types"
@@ -19,7 +20,7 @@ func (srv *Server) GetQuery(w http.ResponseWriter, r *http.Request, params GetQu
 		return
 	}
 
-	svc := service.ReadService{}
+	svc := service.NewReadService(constants.ReadApi)
 	resp, err := svc.Start(params.Q)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)

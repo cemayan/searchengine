@@ -3,14 +3,16 @@ package service
 import (
 	"encoding/json"
 	"errors"
+	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/db"
 	"github.com/cemayan/searchengine/types"
 	"sort"
 )
 
 type ReadService struct {
-	resultMap map[string]float64
-	result    *types.SearchResponse
+	ProjectName constants.Project
+	resultMap   map[string]float64
+	result      *types.SearchResponse
 }
 
 func (rs *ReadService) sort() {
@@ -29,7 +31,7 @@ func (rs *ReadService) sort() {
 
 func (rs *ReadService) Start(data *string) (*types.SearchResponse, error) {
 
-	foundedRecords, err := db.Db.Get(*data, nil)
+	foundedRecords, err := db.SelectedDb(rs.ProjectName, constants.Read).Get(*data, nil)
 	if err != nil {
 		return nil, nil
 	}
@@ -54,4 +56,8 @@ func (rs *ReadService) Start(data *string) (*types.SearchResponse, error) {
 
 	}
 	return rs.result, nil
+}
+
+func NewReadService(projectName constants.Project) *ReadService {
+	return &ReadService{projectName, make(map[string]float64), nil}
 }

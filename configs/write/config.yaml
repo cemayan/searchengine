@@ -3,5 +3,12 @@ environment: dev
 serve:
   port: 8088
 db:
-  name: "redis"
-  addr: "localhost:6379"
+  selectedDb:
+    read: redis
+    write: redis
+  cache:
+    name: "redis"
+    addr: "localhost:6379"
+  persistent:
+    name: "mongodb"
+    uri: "mongodb://localhost:27017"

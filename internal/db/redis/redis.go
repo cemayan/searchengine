@@ -48,10 +48,10 @@ func (r Redis) Set(key string, value interface{}, params *[]string) error {
 	return nil
 }
 
-func New(projectName string) *Redis {
+func New(projectName constants.Project) *Redis {
 	cfg := config.GetConfig(projectName)
 	rdb := redis.NewClient(&redis.Options{
-		Addr: cfg.Db.Addr,
+		Addr: cfg.Db.Cache.Addr,
 		DB:   0, // use default DB
 	})
 	return &Redis{client: rdb}

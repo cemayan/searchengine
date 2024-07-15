@@ -2,13 +2,18 @@ package service
 
 import (
 	"encoding/json"
+	"errors"
+	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/db"
 	"github.com/cemayan/searchengine/trie"
+	"github.com/cemayan/searchengine/types"
 	"github.com/sirupsen/logrus"
 	"strings"
 )
 
-type WriteService struct{}
+type WriteService struct {
+	ProjectName constants.Project
+}
 
 // TODO: add return type
 func (ws *WriteService) prepareData(data string) {
@@ -47,7 +52,7 @@ func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 		var err error
 		val := records[k]
 
-		foundedRecords, err := db.Db.Get(k, nil)
+		foundedRecords, err := db.SelectedDb(ws.ProjectName, constants.Read).Get(k, nil)
 		if err != nil {
 			return
 		}
@@ -66,10 +71,10 @@ func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 			}
 
 			recordJsonStr, _ := json.Marshal(prevMap)
-			err = db.Db.Set(k, recordJsonStr, nil)
+			err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, recordJsonStr, nil)
 		} else {
 			recordJsonStr, _ := json.Marshal(val)
-			err = db.Db.Set(k, recordJsonStr, nil)
+			err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, recordJsonStr, nil)
 		}
 
 		if err != nil {
@@ -78,6 +83,38 @@ func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 	}
 }
 
+func (ws *WriteService) Selection(rec types.SelectionRequest) error {
+	foundedRecords, err := db.SelectedDb(ws.ProjectName, constants.Read).Get(rec.Query, nil)
+	if err != nil {
+		return nil
+	}
+
+	if foundedRecords != "" {
+		var convertedStr []interface{}
+		err = json.Unmarshal([]byte(foundedRecords), &convertedStr)
+
+		resultMap := convertedStr[0]
+		prevMap := resultMap.(map[string]interface{})
+
+		if _, ok := prevMap[rec.Selection]; ok {
+			prevCounter := prevMap[rec.Selection].(float64)
+			prevMap[rec.Selection] = prevCounter + 1
+
+			recordJsonStr, _ := json.Marshal(prevMap)
+			err = db.SelectedDb(ws.ProjectName, constants.Write).Set(rec.Query, recordJsonStr, nil)
+		} else {
+			return errors.New("record not found")
+		}
+
+	}
+
+	return nil
+}
+
 func (ws *WriteService) Start(data string) {
 	ws.prepareData(data)
+}
+
+func NewWriteService(projectName constants.Project) *WriteService {
+	return &WriteService{ProjectName: projectName}
 }

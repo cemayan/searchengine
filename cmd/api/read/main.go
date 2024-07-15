@@ -17,8 +17,8 @@ import (
 )
 
 func init() {
-	config.Init(constants.ReadApiConfig)
-	db.Init(constants.ReadApiConfig)
+	config.Init(constants.ReadApi)
+	db.Init(constants.ReadApi)
 }
 
 func main() {
@@ -35,7 +35,7 @@ func main() {
 		}
 	}()
 
-	logrus.Infof("Server started on port: %v\n", config.GetConfig(constants.ReadApiConfig).Serve.Port)
+	logrus.Infof("Server started on port: %v\n", config.GetConfig(constants.ReadApi).Serve.Port)
 
 	<-done
 	logrus.Infoln("Server stopped")

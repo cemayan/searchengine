@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/cemayan/searchengine/common"
+	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/service"
 	"github.com/cemayan/searchengine/types"
 	"github.com/sirupsen/logrus"
@@ -21,7 +22,7 @@ func (srv *Server) PostRecord(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	svc := service.WriteService{}
+	svc := service.NewWriteService(constants.WriteApi)
 	svc.Start(rec.Data)
 
 	msg := fmt.Sprintf("%s record added to database successfully", rec.Data)

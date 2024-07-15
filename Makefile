@@ -21,3 +21,5 @@ dev: localredis # Start all services
 localredis: # Start a redis-server
 	screen -S redis -dm redis-stack-server
 
+localmongogb: # Start a mongodb
+	mongod --config /opt/homebrew/etc/mongod.conf --fork
