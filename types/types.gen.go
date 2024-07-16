@@ -15,9 +15,20 @@ type Error struct {
 	Msg string `json:"msg"`
 }
 
+// Items defines model for Items.
+type Items struct {
+	Title *string `json:"title,omitempty"`
+	Url   *string `json:"url,omitempty"`
+}
+
 // RecordRequest defines model for RecordRequest.
 type RecordRequest struct {
 	Data string `json:"data"`
+}
+
+// ResultsResponse defines model for ResultsResponse.
+type ResultsResponse struct {
+	Items *Items `json:"items,omitempty"`
 }
 
 // SearchResponse defines model for SearchResponse.

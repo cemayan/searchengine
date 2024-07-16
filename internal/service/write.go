@@ -1,7 +1,6 @@
 package service
 
 import (
-	"encoding/json"
 	"errors"
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
@@ -49,10 +48,10 @@ func (ws *WriteService) prepareData(data string) {
 }
 
 func (ws *WriteService) AddRecordMetadataToDb(req *backendreq.BackendRequest) {
-	for _, val := range req.GetItems() {
-		marshal, _ := json.Marshal(val)
-		db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.RecordMetadata, req.GetRecord(), marshal, nil)
-	}
+	value := map[string]interface{}{}
+	value["items"] = req.Items
+
+	db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.RecordMetadata, req.GetRecord(), value, nil)
 }
 
 func (ws *WriteService) mergeTheMaps(prevMap map[string]interface{}, currentMap map[string]int) map[string]interface{} {

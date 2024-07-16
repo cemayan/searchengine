@@ -1,5 +1,9 @@
 package constants
 
+const (
+	XSearchEngineQuery = "X-SearchEngine-Query"
+)
+
 type Db int
 
 const (

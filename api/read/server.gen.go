@@ -12,6 +12,9 @@ import (
 	"github.com/oapi-codegen/runtime"
 )
 
+// ResultsResponse defines model for ResultsResponse.
+type ResultsResponse = externalRef0.ResultsResponse
+
 // SearchResponse defines model for SearchResponse.
 type SearchResponse = externalRef0.SearchResponse
 
@@ -32,6 +35,9 @@ type ServerInterface interface {
 
 	// (GET /query)
 	GetQuery(w http.ResponseWriter, r *http.Request, params GetQueryParams)
+
+	// (GET /results)
+	GetResults(w http.ResponseWriter, r *http.Request)
 
 	// (GET /test/query)
 	GetTestQuery(w http.ResponseWriter, r *http.Request, params GetTestQueryParams)
@@ -65,6 +71,21 @@ func (siw *ServerInterfaceWrapper) GetQuery(w http.ResponseWriter, r *http.Reque
 
 	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		siw.Handler.GetQuery(w, r, params)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
+
+// GetResults operation middleware
+func (siw *ServerInterfaceWrapper) GetResults(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetResults(w, r)
 	}))
 
 	for _, middleware := range siw.HandlerMiddlewares {
@@ -216,6 +237,8 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 	}
 
 	r.HandleFunc(options.BaseURL+"/query", wrapper.GetQuery).Methods("GET")
+
+	r.HandleFunc(options.BaseURL+"/results", wrapper.GetResults).Methods("GET")
 
 	r.HandleFunc(options.BaseURL+"/test/query", wrapper.GetTestQuery).Methods("GET")
 

@@ -71,12 +71,10 @@ func (s server) SearchHandler(ctx context.Context, request *pb.SearchRequest) (*
 
 	client := backendpb.NewDbServiceClient(grpcCliConn)
 
-	r, err := client.SendRequest(ctx, &backendpb.BackendRequest{Items: arr, Record: request.GetRecord()})
+	_, err := client.SendRequest(ctx, &backendpb.BackendRequest{Items: arr, Record: request.GetRecord()})
 	if err != nil {
 		log.Fatalf("could not greet: %v", err)
 	}
-
-	fmt.Println(r)
 
 	return &pb.SearchRequest{}, nil
 }

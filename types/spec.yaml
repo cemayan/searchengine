@@ -6,6 +6,18 @@ info:
 components:
   schemas:
     # base types
+    Items:
+      type: object
+      properties:
+        title:
+          type: string
+        url:
+          type: string
+    ResultsResponse:
+      type: object
+      properties:
+        items:
+            $ref: '#/components/schemas/Items'
     ApiResponse:
       type: object
       properties:

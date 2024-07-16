@@ -28,6 +28,28 @@ func (rs *ReadService) sort() {
 	rs.result = &keys
 }
 
+func (rs *ReadService) GetResults(query string) map[string]interface{} {
+	currentDb := constants.Str2Db[config.GetConfig(rs.ProjectName).Db.SelectedDb.Read]
+	foundedRecords, err := db.SelectedDb(rs.ProjectName, constants.Read).Get(constants.RecordMetadata, query, nil)
+	if err != nil || foundedRecords == nil {
+		return nil
+	}
+
+	var genericMap map[string]interface{}
+
+	if currentDb == constants.Redis {
+		castedFoundedRecords := foundedRecords.([]interface{})
+
+		if len(castedFoundedRecords) != 0 {
+			genericMap = castedFoundedRecords[0].(map[string]interface{})
+		}
+	} else if currentDb == constants.MongoDb {
+		genericMap = foundedRecords.(map[string]interface{})
+	}
+
+	return genericMap
+}
+
 func (rs *ReadService) Start(data *string) (*types.SearchResponse, error) {
 
 	currentDb := constants.Str2Db[config.GetConfig(rs.ProjectName).Db.SelectedDb.Read]

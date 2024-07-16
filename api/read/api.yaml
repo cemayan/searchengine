@@ -26,6 +26,15 @@ paths:
           content:
             application/json:
               schema:
+                $ref: '#/components/schemas/ResultsResponse'
+  /results:
+    get:
+      responses:
+        '200':
+          description: query results
+          content:
+            application/json:
+              schema:
                 $ref: '#/components/schemas/SearchResponse'
   /test/query:
     get:
@@ -46,3 +55,5 @@ components:
   schemas:
     SearchResponse:
       $ref: "../../types/spec.yaml#/components/schemas/SearchResponse"
+    ResultsResponse:
+      $ref: "../../types/spec.yaml#/components/schemas/ResultsResponse"
