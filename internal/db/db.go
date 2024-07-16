@@ -21,8 +21,8 @@ func init() {
 
 type DB interface {
 	GetAll() interface{}
-	Get(key string, params *[]string) (interface{}, error)
-	Set(key string, value interface{}, params *[]string) error
+	Get(dbName constants.DbName, key string, params *[]string) (interface{}, error)
+	Set(dbName constants.DbName, key string, value interface{}, params *[]string) error
 }
 
 func SelectedDb(project constants.Project, dbType constants.DbType) DB {

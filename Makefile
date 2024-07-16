@@ -14,7 +14,7 @@ BIN_FOLDER=bin
 
 
 
-dev: localredis localmongogb # Start all services
+dev: localredis localmongogb protoc # Start all services
 
 
 .PHONY: localredis
@@ -23,3 +23,11 @@ localredis: # Start a redis-server
 
 localmongogb: # Start a mongodb
 	mongod --config /opt/homebrew/etc/mongod.conf --fork
+
+protoc: # Generate client and server code
+	 protoc --go_out=. --go_opt=paths=source_relative \
+        --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+        protos/searchreq/searchreq.proto
+		 protoc --go_out=. --go_opt=paths=source_relative \
+            --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+            protos/backendreq/backendreq.proto

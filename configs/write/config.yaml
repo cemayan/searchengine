@@ -4,6 +4,10 @@ serve:
   port: 8088
 cache:
   enabled: true
+scraper:
+  server:
+    host: "localhost"
+    port: 50077
 db:
   selectedDb:
     read: mongodb
@@ -13,4 +17,4 @@ db:
     addr: "localhost:6379"
   persistent:
     name: "mongodb"
-    uri: "mongodb://localhost:27017/searchengine"
+    uri: "mongodb://localhost:27017"

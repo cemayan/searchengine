@@ -30,32 +30,32 @@ func (rs *ReadService) sort() {
 
 func (rs *ReadService) Start(data *string) (*types.SearchResponse, error) {
 
-	foundedRecords, err := db.SelectedDb(rs.ProjectName, constants.Read).Get(*data, nil)
-	if err != nil {
-		return nil, nil
-	}
+	currentDb := constants.Str2Db[config.GetConfig(rs.ProjectName).Db.SelectedDb.Read]
 
-	db := constants.Str2Db[config.GetConfig(rs.ProjectName).Db.SelectedDb.Read]
+	foundedRecords, err := db.SelectedDb(rs.ProjectName, constants.Read).Get(constants.Record, *data, nil)
+	if err != nil || foundedRecords == nil {
+		return nil, err
+	}
 
 	var genericMap map[string]interface{}
 
-	if db == constants.Redis {
+	if currentDb == constants.Redis {
 		castedFoundedRecords := foundedRecords.([]interface{})
 
 		if len(castedFoundedRecords) != 0 {
 			genericMap = castedFoundedRecords[0].(map[string]interface{})
 		}
-	} else if db == constants.MongoDb {
+	} else if currentDb == constants.MongoDb {
 		genericMap = foundedRecords.(map[string]interface{})
 	}
 
 	intMap := map[string]int{}
 	for key, value := range genericMap {
 		if key != "_id" {
-			if db == constants.Redis {
+			if currentDb == constants.Redis {
 				flt := value.(float64)
 				intMap[key] = int(flt)
-			} else if db == constants.MongoDb {
+			} else if currentDb == constants.MongoDb {
 				i32 := value.(int32)
 				intMap[key] = int(i32)
 			}

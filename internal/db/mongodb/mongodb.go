@@ -22,7 +22,7 @@ type MongoDB struct {
 func (r MongoDB) GetAll() interface{} {
 	batchSize := int32(100)
 
-	collections, err := r.client.Database(constants.MongoDbDatabase).ListCollectionNames(ctx, bson.D{}, &options.ListCollectionsOptions{
+	collections, err := r.client.Database(constants.RecordDatabase).ListCollectionNames(ctx, bson.D{}, &options.ListCollectionsOptions{
 		BatchSize: &batchSize,
 	})
 	if err != nil {
@@ -32,9 +32,9 @@ func (r MongoDB) GetAll() interface{} {
 	return collections
 }
 
-func (r MongoDB) Get(key string, params *[]string) (interface{}, error) {
+func (r MongoDB) Get(dbName constants.DbName, key string, params *[]string) (interface{}, error) {
 	var mm map[string]interface{}
-	err := r.client.Database(constants.MongoDbDatabase).Collection(key).FindOne(ctx, bson.M{}).Decode(&mm)
+	err := r.client.Database(constants.DbName2Str[dbName]).Collection(key).FindOne(ctx, bson.M{}).Decode(&mm)
 
 	if err != nil {
 		if err.Error() != "document is nil" || err.Error() != "mongo: no documents in result" {
@@ -47,12 +47,12 @@ func (r MongoDB) Get(key string, params *[]string) (interface{}, error) {
 	return mm, nil
 }
 
-func (r MongoDB) Set(key string, value interface{}, params *[]string) error {
+func (r MongoDB) Set(dbName constants.DbName, key string, value interface{}, params *[]string) error {
 
 	upsert := true
 	update := bson.D{{"$set", value}}
 
-	_, err := r.client.Database(constants.MongoDbDatabase).Collection(key).UpdateOne(ctx, bson.D{}, update,
+	_, err := r.client.Database(constants.DbName2Str[dbName]).Collection(key).UpdateOne(ctx, bson.D{}, update,
 		&options.UpdateOptions{Upsert: &upsert})
 	if err != nil {
 		return err
@@ -60,7 +60,7 @@ func (r MongoDB) Set(key string, value interface{}, params *[]string) error {
 
 	if r.redis != nil {
 		go func() {
-			err := r.redis.Set(key, value, params)
+			err := r.redis.Set(dbName, key, value, params)
 			if err != nil {
 				logrus.Errorln("redis set err", err)
 			}

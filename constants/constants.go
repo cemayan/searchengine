@@ -25,11 +25,23 @@ const (
 	ReadApi Project = iota + 1
 	WriteApi
 	Scheduler
+	Scraper
 )
 
-var ProjectMap = map[Project]string{ReadApi: "read", WriteApi: "write", Scheduler: "scheduler"}
+var ProjectMap = map[Project]string{ReadApi: "read", WriteApi: "write", Scheduler: "scheduler", Scraper: "scraper"}
 
 const (
-	RedisJsonPrefix = "record"
-	MongoDbDatabase = "searchengine"
+	RecordMetaDataPrefix   = "recordmetadata"
+	RecordPrefix           = "record"
+	RecordDatabase         = "searchengine"
+	RecordMetaDataDatabase = "searchenginemetadata"
 )
+
+type DbName int
+
+const (
+	Record DbName = iota + 1
+	RecordMetadata
+)
+
+var DbName2Str = map[DbName]string{Record: "record", RecordMetadata: "recordmetadata"}

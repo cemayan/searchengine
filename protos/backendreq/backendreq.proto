@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = "github.com/cemayan/searchengine/protos/backendreq";
+
+package protos;
+
+
+service DbService {
+  // Sends a greeting
+  rpc SendRequest (BackendRequest) returns (BackendRequest) {}
+}
+
+message BackendRequestItem {
+
+  string title = 2;
+  string url = 3;
+}
+
+
+// The request message containing the user's name.
+message BackendRequest {
+  string record = 1;
+  repeated BackendRequestItem items = 2;
+}
+

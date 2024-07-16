@@ -1,10 +1,12 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
 	"github.com/cemayan/searchengine/internal/db"
+	"github.com/cemayan/searchengine/protos/backendreq"
 	"github.com/cemayan/searchengine/trie"
 	"github.com/cemayan/searchengine/types"
 	"github.com/sirupsen/logrus"
@@ -46,6 +48,13 @@ func (ws *WriteService) prepareData(data string) {
 
 }
 
+func (ws *WriteService) AddRecordMetadataToDb(req *backendreq.BackendRequest) {
+	for _, val := range req.GetItems() {
+		marshal, _ := json.Marshal(val)
+		db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.RecordMetadata, req.GetRecord(), marshal, nil)
+	}
+}
+
 func (ws *WriteService) mergeTheMaps(prevMap map[string]interface{}, currentMap map[string]int) map[string]interface{} {
 	for k, _ := range currentMap {
 		if _, ok := prevMap[k]; !ok {
@@ -55,12 +64,13 @@ func (ws *WriteService) mergeTheMaps(prevMap map[string]interface{}, currentMap 
 	return prevMap
 }
 func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
+
 	for k := range records {
 
 		var err error
 		currentMap := records[k]
 
-		foundedRecords, err := db.SelectedDb(ws.ProjectName, constants.Read).Get(k, nil)
+		foundedRecords, err := db.SelectedDb(ws.ProjectName, constants.Read).Get(constants.Record, k, nil)
 		if err != nil {
 			logrus.Error(err)
 			return
@@ -76,18 +86,18 @@ func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 
 			if len(castedFoundedRecords) > 0 {
 				prevMap = castedFoundedRecords[0].(map[string]interface{})
-				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, ws.mergeTheMaps(prevMap, currentMap), nil)
+				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.Record, k, ws.mergeTheMaps(prevMap, currentMap), nil)
 			} else {
-				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, currentMap, nil)
+				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.Record, k, currentMap, nil)
 			}
 
 		} else if _db == constants.MongoDb {
 
 			if foundedRecords != nil {
 				prevMap = foundedRecords.(map[string]interface{})
-				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, ws.mergeTheMaps(prevMap, currentMap), nil)
+				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.Record, k, ws.mergeTheMaps(prevMap, currentMap), nil)
 			} else {
-				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(k, currentMap, nil)
+				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.Record, k, currentMap, nil)
 			}
 
 		}
@@ -112,7 +122,7 @@ func (ws *WriteService) increaseValue(prevMap map[string]interface{}, rec types.
 			prevMap[rec.SelectedKey] = int(i32) + 1
 		}
 
-		return db.SelectedDb(ws.ProjectName, constants.Write).Set(rec.Query, prevMap, nil)
+		return db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.Record, rec.Query, prevMap, nil)
 	} else {
 		return errors.New("record not found")
 	}
@@ -120,7 +130,7 @@ func (ws *WriteService) increaseValue(prevMap map[string]interface{}, rec types.
 }
 
 func (ws *WriteService) Selection(rec types.SelectionRequest) error {
-	foundedRecords, err := db.SelectedDb(ws.ProjectName, constants.Read).Get(rec.Query, nil)
+	foundedRecords, err := db.SelectedDb(ws.ProjectName, constants.Read).Get(constants.Record, rec.Query, nil)
 	if err != nil {
 		return nil
 	}

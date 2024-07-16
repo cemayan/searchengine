@@ -19,7 +19,7 @@ func (r Redis) GetAll() interface{} {
 	panic("implement me")
 }
 
-func (r Redis) Get(key string, params *[]string) (interface{}, error) {
+func (r Redis) Get(dbName constants.DbName, key string, params *[]string) (interface{}, error) {
 
 	currentPath := params
 	if params == nil {
@@ -29,7 +29,7 @@ func (r Redis) Get(key string, params *[]string) (interface{}, error) {
 		currentPath = path
 	}
 
-	val, err := r.client.JSONGet(ctx, fmt.Sprintf("%s:%s", constants.RedisJsonPrefix, key), *currentPath...).Expanded()
+	val, err := r.client.JSONGet(ctx, fmt.Sprintf("%s:%s", constants.DbName2Str[dbName], key), *currentPath...).Expanded()
 
 	if err != nil {
 		return "", err
@@ -38,7 +38,7 @@ func (r Redis) Get(key string, params *[]string) (interface{}, error) {
 	return val, nil
 }
 
-func (r Redis) Set(key string, value interface{}, params *[]string) error {
+func (r Redis) Set(dbName constants.DbName, key string, value interface{}, params *[]string) error {
 
 	currentPath := ""
 	if params == nil {
@@ -46,7 +46,7 @@ func (r Redis) Set(key string, value interface{}, params *[]string) error {
 		currentPath = "$"
 	}
 
-	_, err := r.client.JSONSet(ctx, fmt.Sprintf("%s:%s", constants.RedisJsonPrefix, key), currentPath, value).Result()
+	_, err := r.client.JSONSet(ctx, fmt.Sprintf("%s:%s", constants.DbName2Str[dbName], key), currentPath, value).Result()
 	if err != nil {
 		return err
 	}

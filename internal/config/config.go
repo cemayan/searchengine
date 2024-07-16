@@ -45,6 +45,15 @@ type Cache struct {
 	Enabled bool `yaml:"enabled"`
 }
 
+type ScraperServer struct {
+	Host string `yaml:"host"`
+	Port int    `yaml:"port"`
+}
+
+type Scraper struct {
+	Server ScraperServer `yaml:"server"`
+}
+
 // GeneralConfig represents parsed yaml values
 type GeneralConfig struct {
 	Version     int       `yaml:"version"`
@@ -53,6 +62,7 @@ type GeneralConfig struct {
 	Db          Db        `yaml:"db"`
 	Scheduler   Scheduler `yaml:"scheduler"`
 	Cache       Cache     `yaml:"cache"`
+	Scraper     Scraper   `yaml:"scraper"`
 }
 
 var (

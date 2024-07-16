@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+option go_package = "github.com/cemayan/searchengine/protos/searchreq";
+
+package protos;
+
+// The greeting service definition.
+service Searcher {
+  // Sends a greeting
+  rpc SearchHandler (SearchRequest) returns (SearchRequest) {}
+}
+
+// The request message containing the user's name.
+message SearchRequest {
+  string record = 1;
+}
+
