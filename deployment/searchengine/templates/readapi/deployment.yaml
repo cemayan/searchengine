@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "readApi.fullname" . }}
+  labels:
+    {{- include "readApi.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.readApi.autoscaling.enabled }}
+  replicas: {{ .Values.readApi.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "readApi.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.readApi.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "readApi.labels" . | nindent 8 }}
+        {{- with .Values.readApi.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.readApi.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "readApi.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.readApi.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.readApi.name }}
+          securityContext:
+            {{- toYaml .Values.readApi.securityContext | nindent 12 }}
+          image: "{{ .Values.readApi.image.repository }}:{{ .Values.readApi.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.readApi.image.pullPolicy }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.readApi.service.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.readApi.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.readApi.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.readApi.resources | nindent 12 }}
+          {{- with .Values.readApi.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.readApi.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.readApi.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.readApi.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.readApi.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

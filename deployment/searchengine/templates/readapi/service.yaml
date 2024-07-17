@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "readApi.fullname" . }}
+  labels:
+    {{- include "readApi.labels" . | nindent 4 }}
+spec:
+  type: {{ .Values.readApi.service.type }}
+  ports:
+    - port: {{ .Values.readApi.service.port }}
+      targetPort: {{ .Values.readApi.service.targetPort }}
+      protocol: TCP
+      name: http
+  selector:
+    {{- include "readApi.selectorLabels" . | nindent 4 }}
