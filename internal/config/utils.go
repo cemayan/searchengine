@@ -1,7 +1,7 @@
 package config
 
 import (
-	"github.com/sirupsen/logrus"
+	"fmt"
 	"os"
 	"os/exec"
 	"strings"
@@ -14,15 +14,24 @@ const (
 // readYaml reads the given yaml
 func readYaml(name string, configFolder string) []byte {
 
-	currentPath, err := getModuleFolder()
+	configPath, err := getModuleFolder()
+
 	if err != nil {
-		logrus.Errorf("fatal error config file: %w", err)
+		configPath = configFolder
+	} else {
+		configPath = configPath + "/" + configFolder
 	}
 
-	currentPath = currentPath + "/" + configFolder
-	currentFile := currentPath + "/" + name + ".yaml"
+	currentEnv := "dev"
+
+	if env, found := os.LookupEnv("READAPI_ENV"); found {
+		currentEnv = env
+	}
+
+	currentFile := fmt.Sprintf("%s/%s_%s.yaml", configPath, name, currentEnv)
 
 	file, err := os.ReadFile(currentFile)
+
 	if err != nil {
 		return nil
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
+	"github.com/rs/cors"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"time"
@@ -18,12 +19,20 @@ type Server struct {
 	router *Router
 }
 
+func corsHandler() *cors.Cors {
+	return cors.New(cors.Options{
+		AllowedOrigins: config.GetConfig(constants.WriteApi).Web.AllowedOrigins,
+		AllowedMethods: []string{"GET", "HEAD", "POST", "DELETE"},
+	})
+}
+
 func (srv *Server) ListenAndServe(context.Context) error {
 
 	// get an `http.Handler` that we can use
 	h := HandlerFromMux(srv, srv.router.router)
 	srv.router.negroni.UseHandler(h)
-	srv.server.Handler = srv.router.negroni
+
+	srv.server.Handler = corsHandler().Handler(srv.router.negroni)
 
 	// And we serve HTTP until the world ends.
 	return srv.server.ListenAndServe()

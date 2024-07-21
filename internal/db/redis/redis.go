@@ -6,6 +6,7 @@ import (
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
 	"github.com/redis/go-redis/v9"
+	"github.com/sirupsen/logrus"
 )
 
 var ctx = context.Background()
@@ -60,5 +61,10 @@ func New(projectName constants.Project) *Redis {
 		Addr: cfg.Db.Cache.Addr,
 		DB:   0, // use default DB
 	})
+
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		logrus.Fatal(err)
+	}
+
 	return &Redis{client: rdb}
 }

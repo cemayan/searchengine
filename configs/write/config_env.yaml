@@ -2,6 +2,9 @@ version: 1
 environment: dev
 serve:
   port: 8088
+web:
+  allowedOrigins:
+    - "*"
 cache:
   enabled: true
 scraper:

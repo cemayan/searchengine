@@ -54,6 +54,10 @@ type Scraper struct {
 	Server ScraperServer `yaml:"server"`
 }
 
+type Web struct {
+	AllowedOrigins []string `yaml:"allowedOrigins"`
+}
+
 // GeneralConfig represents parsed yaml values
 type GeneralConfig struct {
 	Version     int       `yaml:"version"`
@@ -63,6 +67,7 @@ type GeneralConfig struct {
 	Scheduler   Scheduler `yaml:"scheduler"`
 	Cache       Cache     `yaml:"cache"`
 	Scraper     Scraper   `yaml:"scraper"`
+	Web         Web       `yaml:"web"`
 }
 
 var (

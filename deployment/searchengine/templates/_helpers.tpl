@@ -11,7 +11,7 @@ Expand the name of the chart.
 
 
 {{- define "readApi.chart" -}}
-{{- printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- printf "%s-%s" .Values.readApi.name  .Values.readApi.version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
 {{- end }}
 
 
@@ -67,3 +67,85 @@ Create the name of the service account to use
 {{- default "default" .Values.readApi.serviceAccount.name }}
 {{- end }}
 {{- end }}
+
+
+
+
+
+
+
+
+{{/*
+Expand the name of the chart.
+*/}}
+{{- define "app.name" -}}
+{{- default .Chart.Name .Values.app.nameOverride | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+
+
+{{- define "app.chart" -}}
+{{- printf "%s-%s" .Values.app.name  .Values.app.version | replace "+" "_" | trunc 63 | trimSuffix "-" }}
+{{- end }}
+
+
+
+{{/*
+Create a default fully qualified app name.
+We truncate at 63 chars because some Kubernetes name fields are limited to this (by the DNS naming spec).
+If release name contains chart name it will be used as a full name.
+*/}}
+{{- define "app.fullname" -}}
+{{- if .Values.readApi.fullnameOverride }}
+{{- .Values.readApi.fullnameOverride | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- $name := default .Values.app.name .Values.app.nameOverride }}
+{{- if contains $name .Release.Name }}
+{{- .Release.Name | trunc 63 | trimSuffix "-" }}
+{{- else }}
+{{- printf "%s-%s" .Release.Name $name | trunc 63 | trimSuffix "-" }}
+{{- end }}
+{{- end }}
+{{- end }}
+
+
+{{/*
+Selector labels
+*/}}
+{{- define "app.selectorLabels" -}}
+app.kubernetes.io/name: {{ include "app.name" . }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+{{- end }}
+
+
+{{/*
+Common labels
+*/}}
+{{- define "app.labels" -}}
+helm.sh/chart: {{ include "app.chart" . }}
+{{ include "app.selectorLabels" . }}
+{{- if .Values.app.version }}
+app.kubernetes.io/version: {{ .Values.app.version | quote }}
+{{- end }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+{{- end }}
+
+
+{{/*
+Create the name of the service account to use
+*/}}
+{{- define "app.serviceAccountName" -}}
+{{- if .Values.readApi.serviceAccount.create }}
+{{- default (include "app.fullname" .) .Values.app.serviceAccount.name }}
+{{- else }}
+{{- default "default" .Values.readApi.serviceAccount.name }}
+{{- end }}
+{{- end }}
+
+
+
+
+
+
+
+

@@ -10,6 +10,8 @@ import (
 	"net/http"
 )
 
+var readSvc = service.NewReadService(constants.ReadApi)
+
 func (srv *Server) GetQuery(w http.ResponseWriter, r *http.Request, params GetQueryParams) {
 
 	w.Header().Set("Content-Type", "application/json")
@@ -20,8 +22,7 @@ func (srv *Server) GetQuery(w http.ResponseWriter, r *http.Request, params GetQu
 		return
 	}
 
-	svc := service.NewReadService(constants.ReadApi)
-	resp, err := svc.Start(params.Q)
+	resp, err := readSvc.Start(params.Q)
 	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
 		return

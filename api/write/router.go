@@ -12,6 +12,7 @@ type Router struct {
 
 func NewRouter() *Router {
 	router := mux.NewRouter()
+
 	api := router.PathPrefix("/v1").Subrouter()
 	n := negroni.Classic() // Includes some default middlewares
 

@@ -51,6 +51,13 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SearchResponse'
+  /health:
+    get:
+      summary: Health check endpoint
+      security: []
+      responses:
+        "200":
+          description: healthy
 components:
   schemas:
     SearchResponse:
