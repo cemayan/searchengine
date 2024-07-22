@@ -21,8 +21,14 @@ import (
 	"time"
 )
 
+var (
+	configPath string
+)
+
 func init() {
-	config.Init(constants.WriteApi)
+	flag.StringVar(&configPath, "config", "", "Path of config yaml")
+	flag.Parse()
+	config.Init(constants.WriteApi, configPath)
 	db.Init(constants.WriteApi)
 }
 
@@ -39,7 +45,6 @@ func (s server) SendRequest(ctx context.Context, request *pb.BackendRequest) (*p
 }
 
 func backendGrpcServer() {
-	flag.Parse()
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", config.GetConfig(constants.WriteApi).Scraper.Server.Port))
 	if err != nil {
 		logrus.Fatalf("failed to listen: %v", err)

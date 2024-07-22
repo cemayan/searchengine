@@ -58,12 +58,13 @@ func (r Redis) Set(dbName constants.DbName, key string, value interface{}, param
 func New(projectName constants.Project) *Redis {
 	cfg := config.GetConfig(projectName)
 	rdb := redis.NewClient(&redis.Options{
-		Addr: cfg.Db.Cache.Addr,
-		DB:   0, // use default DB
+		Addr:     cfg.Db.Cache.Addr,
+		Password: cfg.Db.Cache.Pass,
+		DB:       0, // use default DB
 	})
 
 	if err := rdb.Ping(ctx).Err(); err != nil {
-		logrus.Fatal(err)
+		logrus.Errorln(err)
 	}
 
 	return &Redis{client: rdb}

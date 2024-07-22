@@ -3,6 +3,7 @@ package config
 import (
 	"fmt"
 	"github.com/cemayan/searchengine/constants"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/yaml.v3"
 )
 
@@ -75,9 +76,10 @@ var (
 )
 
 // Init unmarshalls the yaml
-func Init(projectName constants.Project) {
+func Init(projectName constants.Project, yamlPath string) {
 	var genConfig GeneralConfig
-	yamlFile := readYaml(fmt.Sprintf("%s/config", constants.ProjectMap[projectName]), ConfigPaths)
+	logrus.Println("yamlPath:", yamlPath)
+	yamlFile := readYaml(yamlPath)
 	err := yaml.Unmarshal(yamlFile, &genConfig)
 	config[projectName] = genConfig
 	if err != nil {

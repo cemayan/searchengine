@@ -1,8 +1,0 @@
-version: 1
-environment: dev
-serve:
-  port: 8087
-scraper:
-  server:
-    host: "localhost"
-    port: 50076

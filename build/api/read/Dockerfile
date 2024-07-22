@@ -12,8 +12,8 @@ COPY . .
 
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags "-s -w" -o /app/readapi  cmd/api/read/main.go
 
-FROM scratch
+FROM busybox
 COPY --from=builder /app/readapi /app/readapi
 COPY --from=builder /app/configs /configs
 EXPOSE 8087
-CMD ["/app/readapi"]
+ENTRYPOINT ["/app/readapi"]

@@ -13,6 +13,7 @@ readApi:
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: "v1"
+  args: ["--config","/etc/config/readapi.yaml"]
   imagePullSecrets: [ ]
   nameOverride: "readapi"
   fullnameOverride: ""
@@ -32,7 +33,7 @@ readApi:
   podLabels: { }
 
   envs:
-    - name: "READAPI_ENV"
+    - name: "SEARCHENGINE_ENV"
       value: "prod"
 
   podSecurityContext: { }
@@ -42,14 +43,14 @@ readApi:
     # capabilities:
     #   drop:
     #   - ALL
-    # readOnlyRootFilesystem: true
+  # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
 
   service:
-      type: ClusterIP
-      port: 8087
-      targetPort: 8087
+    type: ClusterIP
+    port: 8087
+    targetPort: 8087
 
   ingress:
     enabled: true
@@ -75,7 +76,7 @@ readApi:
     # limits:
     #   cpu: 100m
     #   memory: 128Mi
-    # requests:
+  # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
@@ -96,17 +97,35 @@ readApi:
     # targetMemoryUtilizationPercentage: 80
 
   # Additional volumes on the output Deployment definition.
-  volumes: [ ]
-  # - name: foo
-  #   secret:
-  #     secretName: mysecret
-  #     optional: false
+  volumes:
+    - name: config-volume
+      configMap:
+        name: searchengine-readapi
 
   # Additional volumeMounts on the output Deployment definition.
-  volumeMounts: [ ]
-  # - name: foo
-  #   mountPath: "/etc/foo"
-  #   readOnly: true
+  volumeMounts:
+    - name: config-volume
+      mountPath: /etc/config
+
+  yamlConfig:
+    readapi.yaml: |-
+      version: 1
+      environment: prod
+      serve:
+        port: 8087
+      web:
+        allowedOrigins:
+          - "*"
+      db:
+        selectedDb:
+          read: redis
+        cache:
+          name: "redis"
+          addr: "redis-stack-server-master:6379"
+          pass: "weak"
+        persistent:
+          name: "mongodb"
+          uri: "mongodb://mongodb:27017"
 
   nodeSelector: { }
 
@@ -144,7 +163,7 @@ app:
   securityContext: { }
     # capabilities:
     #   drop:
-    #   - ALL
+  #   - ALL
   # readOnlyRootFilesystem: true
   # runAsNonRoot: true
   # runAsUser: 1000
@@ -177,7 +196,7 @@ app:
     # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
     # limits:
     #   cpu: 100m
-    #   memory: 128Mi
+  #   memory: 128Mi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
@@ -216,15 +235,3 @@ app:
   tolerations: [ ]
 
   affinity: { }
-
-
-redis:
-  global:
-    redis:
-      password: password
-  replica:
-    replicaCount: 2
-  sentinel:
-    enabled: true
-
-

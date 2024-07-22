@@ -3,11 +3,11 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"github.com/cemayan/searchengine/api/read"
 	"github.com/cemayan/searchengine/constants"
-	"github.com/cemayan/searchengine/internal/db"
-
 	"github.com/cemayan/searchengine/internal/config"
+	"github.com/cemayan/searchengine/internal/db"
 	"github.com/sirupsen/logrus"
 	"net/http"
 	"os"
@@ -16,12 +16,20 @@ import (
 	"time"
 )
 
+var (
+	configPath string
+)
+
 func init() {
-	config.Init(constants.ReadApi)
+	flag.StringVar(&configPath, "config", "", "Path of config yaml")
+	flag.Parse()
+	config.Init(constants.ReadApi, configPath)
 	db.Init(constants.ReadApi)
+
 }
 
 func main() {
+
 	server := read.NewServer()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)

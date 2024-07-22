@@ -36,6 +36,15 @@ spec:
             {{- toYaml .Values.readApi.securityContext | nindent 12 }}
           image: "{{ .Values.readApi.image.repository }}:{{ .Values.readApi.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.readApi.image.pullPolicy }}
+          args:
+          {{  range .Values.readApi.args  }}
+           - {{ . }}
+          {{- end }}
+          env:
+          {{- range .Values.readApi.envs }}
+            - name: {{ .name }}
+              value: {{ .value }}
+          {{- end }}
           ports:
             - name: http
               containerPort: {{ .Values.readApi.service.port }}

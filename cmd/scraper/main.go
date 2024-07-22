@@ -22,13 +22,18 @@ import (
 )
 
 var (
-	page        *rod.Page
-	grpcCliConn *grpc.ClientConn
+	configPath      string
+	configPathExtra string
+	page            *rod.Page
+	grpcCliConn     *grpc.ClientConn
 )
 
 func init() {
-	config.Init(constants.Scraper)
-	config.Init(constants.WriteApi)
+	flag.StringVar(&configPath, "config", "", "Path of config yaml")
+	flag.StringVar(&configPathExtra, "configExtra", "", "Path of config yaml")
+	flag.Parse()
+	config.Init(constants.Scraper, configPath)
+	config.Init(constants.WriteApi, configPathExtra)
 }
 
 type server struct {
@@ -80,7 +85,6 @@ func (s server) SearchHandler(ctx context.Context, request *pb.SearchRequest) (*
 }
 
 func searchGrpcServer() {
-	flag.Parse()
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", config.GetConfig(constants.Scraper).Scraper.Server.Port))
 	if err != nil {
 		logrus.Fatalf("failed to listen: %v", err)
