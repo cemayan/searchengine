@@ -28,6 +28,9 @@ type PostSelectionJSONRequestBody = SelectionRequest
 
 // ServerInterface represents all server handlers.
 type ServerInterface interface {
+	// Health check endpoint
+	// (GET /health)
+	GetHealth(w http.ResponseWriter, r *http.Request)
 
 	// (POST /record)
 	PostRecord(w http.ResponseWriter, r *http.Request)
@@ -44,6 +47,21 @@ type ServerInterfaceWrapper struct {
 }
 
 type MiddlewareFunc func(http.Handler) http.Handler
+
+// GetHealth operation middleware
+func (siw *ServerInterfaceWrapper) GetHealth(w http.ResponseWriter, r *http.Request) {
+	ctx := r.Context()
+
+	handler := http.Handler(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		siw.Handler.GetHealth(w, r)
+	}))
+
+	for _, middleware := range siw.HandlerMiddlewares {
+		handler = middleware(handler)
+	}
+
+	handler.ServeHTTP(w, r.WithContext(ctx))
+}
 
 // PostRecord operation middleware
 func (siw *ServerInterfaceWrapper) PostRecord(w http.ResponseWriter, r *http.Request) {
@@ -187,6 +205,8 @@ func HandlerWithOptions(si ServerInterface, options GorillaServerOptions) http.H
 		HandlerMiddlewares: options.Middlewares,
 		ErrorHandlerFunc:   options.ErrorHandlerFunc,
 	}
+
+	r.HandleFunc(options.BaseURL+"/health", wrapper.GetHealth).Methods("GET")
 
 	r.HandleFunc(options.BaseURL+"/record", wrapper.PostRecord).Methods("POST")
 

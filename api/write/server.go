@@ -19,6 +19,10 @@ type Server struct {
 	router *Router
 }
 
+func (srv *Server) GetHealth(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(http.StatusOK)
+}
+
 func corsHandler() *cors.Cors {
 	return cors.New(cors.Options{
 		AllowedOrigins: config.GetConfig(constants.WriteApi).Web.AllowedOrigins,

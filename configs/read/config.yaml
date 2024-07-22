@@ -14,23 +14,3 @@ db:
   persistent:
     name: "mongodb"
     uri: "mongodb://localhost:27017"
-
-
-
-#version: 1
-#environment: prod
-#serve:
-#  port: 8087
-#web:
-#  allowedOrigins:
-#    - "*"
-#db:
-#  selectedDb:
-#    read: redis
-#  cache:
-#    name: "redis"
-#    addr: "searchengine-redis:6379"
-#    pass: "password"
-#  persistent:
-#    name: "mongodb"
-#    uri: "mongodb://mongodb:27017"

@@ -1,0 +1,77 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "writeApi.fullname" . }}
+  labels:
+    {{- include "writeApi.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.writeApi.autoscaling.enabled }}
+  replicas: {{ .Values.writeApi.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "writeApi.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.writeApi.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "writeApi.labels" . | nindent 8 }}
+        {{- with .Values.writeApi.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.writeApi.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "writeApi.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.writeApi.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.writeApi.name }}
+          securityContext:
+            {{- toYaml .Values.writeApi.securityContext | nindent 12 }}
+          image: "{{ .Values.writeApi.image.repository }}:{{ .Values.writeApi.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.writeApi.image.pullPolicy }}
+          args:
+          {{  range .Values.writeApi.args  }}
+           - {{ . }}
+          {{- end }}
+          env:
+          {{- range .Values.writeApi.envs }}
+            - name: {{ .name }}
+              value: {{ .value }}
+          {{- end }}
+          ports:
+            - name: http
+              containerPort: {{ .Values.writeApi.service.port }}
+              protocol: TCP
+          livenessProbe:
+            {{- toYaml .Values.writeApi.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.writeApi.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.writeApi.resources | nindent 12 }}
+          {{- with .Values.writeApi.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.writeApi.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.writeApi.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.writeApi.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.writeApi.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
