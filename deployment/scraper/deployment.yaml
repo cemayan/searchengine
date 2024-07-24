@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "scraper.fullname" . }}
+  labels:
+    {{- include "scraper.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.scraper.autoscaling.enabled }}
+  replicas: {{ .Values.scraper.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "scraper.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.scraper.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "scraper.labels" . | nindent 8 }}
+        {{- with .Values.scraper.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.scraper.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "scraper.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.scraper.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.scraper.name }}
+          securityContext:
+            {{- toYaml .Values.scraper.securityContext | nindent 12 }}
+          image: "{{ .Values.scraper.image.repository }}:{{ .Values.scraper.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.scraper.image.pullPolicy }}
+          args:
+          {{  range .Values.scraper.args  }}
+           - {{ . }}
+          {{- end }}
+          env:
+          {{- range .Values.scraper.envs }}
+            - name: {{ .name }}
+              value: {{ .value }}
+          {{- end }}
+          ports:
+                {{- range .Values.scraper.service.ports }}
+            - name: {{ .name}}
+              containerPort: {{ .port }}
+              protocol: TCP
+            {{- end}}
+          livenessProbe:
+            {{- toYaml .Values.scraper.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.scraper.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.scraper.resources | nindent 12 }}
+          {{- with .Values.scraper.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.scraper.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scraper.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scraper.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.scraper.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}

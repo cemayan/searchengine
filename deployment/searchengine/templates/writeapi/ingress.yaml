@@ -1,6 +1,6 @@
 {{- if .Values.writeApi.ingress.enabled -}}
 {{- $fullName := include "writeApi.fullname" . -}}
-{{- $svcPort := .Values.writeApi.service.port -}}
+{{- $svcPort := .Values.writeApi.ingress.port -}}
 {{- if and .Values.writeApi.ingress.className (not (semverCompare ">=1.18-0" .Capabilities.KubeVersion.GitVersion)) }}
   {{- if not (hasKey .Values.writeApi.ingress.annotations "kubernetes.io/ingress.class") }}
   {{- $_ := set .Values.writeApi.ingress.annotations "kubernetes.io/ingress.class" .Values.writeApi.ingress.className}}

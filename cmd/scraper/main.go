@@ -10,6 +10,7 @@ import (
 	pb "github.com/cemayan/searchengine/protos/searchreq"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/input"
+	"github.com/go-rod/rod/lib/launcher"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
@@ -120,9 +121,10 @@ func main() {
 
 	_, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 
-	// Launch a new browser with default options, and connect to it.
-	browser := rod.New().MustConnect()
-	// Even you forget to close, rod will close it after main process ends.
+	path, _ := launcher.LookPath()
+	u := launcher.New().Bin(path).MustLaunch()
+	browser := rod.New().ControlURL(u).MustConnect()
+
 	defer browser.MustClose()
 
 	logrus.Infoln("browser has been launched")
