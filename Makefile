@@ -32,8 +32,8 @@ dev-build: readapi writeapi	_scraper
 dev-run: dev-dep dev-build run
 
 
-k8s: redis-helm-install helm-install
-k8su: helm-uninstall
+k8s: redis-helm-install mongodb-helm-install searchengine-helm-install
+k8su: searchengine-helm-uninstall
 
 
 .PHONY: localredis
@@ -51,37 +51,41 @@ protoc: # Generate client and server code
             --go-grpc_out=. --go-grpc_opt=paths=source_relative \
             protos/backendreq/backendreq.proto
 
-readapi:
+readapi: # Starts reada pi.
 	@echo "  >  Building binary for ${OS}-${ARCH}"
 	CGO_ENABLED=${CGO} GOOS=${OS} GOARCH=${ARCH} go build -C ${PROJECT_FOLDER} -ldflags="${LDFLAGS}" \
 			-o "${BIN_FOLDER}/readapi" "${CMD_FOLDER}/api/read"
 
 
-writeapi:
+writeapi: # Starts write api.
 	@echo "  >  Building binary for ${OS}-${ARCH}"
 	CGO_ENABLED=${CGO} GOOS=${OS} GOARCH=${ARCH} go build -C ${PROJECT_FOLDER} -ldflags="${LDFLAGS}" \
 			-o "${BIN_FOLDER}/writeapi" "${CMD_FOLDER}/api/write"
 
 
-_scraper:
+_scraper: # Starts scraper.
 	@echo "  >  Building binary for ${OS}-${ARCH}"
 	CGO_ENABLED=${CGO} GOOS=${OS} GOARCH=${ARCH} go build -C ${PROJECT_FOLDER} -ldflags="${LDFLAGS}" \
 			-o "${BIN_FOLDER}/scraper" "${CMD_FOLDER}/scraper"
 
 
-run:
+run: #Run whole microservices.
 	./bin/readapi --config configs/read/config.yaml & 2>/dev/null
 	./bin/writeapi --config configs/write/config.yaml & 2>/dev/null
 	./bin/scraper --config configs/scraper/config.yaml --configExtra  configs/write/config.yaml & 2>/dev/null
 
 
-redis-helm-install:
-	./deployment/redis.sh
-redis-helm-uninstall:
+redis-helm-install:  # Install redis via helm
+	./deployment/redis/redis.sh
+redis-helm-uninstall:  # Uninstall redis via helm
 	helm uninstall redis-stack-server
-helm-install:
+mongodb-helm-install:
+	helm repo add mongodb https://mongodb.github.io/helm-charts
+	helm upgrade community-operator mongodb/community-operator
+	kubectl apply -f deployment/mongodb/mongodbcommunity_cr.yaml
+searchengine-helm-install:  #  Deploy whole microservices to k8s
 	helm install searchengine ./deployment/searchengine
-helm-uninstall:
+searchengine-helm-uninstall:
 	helm uninstall searchengine
 
 

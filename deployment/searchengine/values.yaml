@@ -90,7 +90,7 @@ readApi:
       port: 8087
 
   autoscaling:
-    enabled: false
+    enabled: true
     minReplicas: 1
     maxReplicas: 100
     targetCPUUtilizationPercentage: 80
@@ -282,7 +282,7 @@ scraper:
     pullPolicy: Always
     # Overrides the image tag whose default is the chart appVersion.
     tag: "v1"
-  args: ["--config","/etc/config/scraper.yaml","--configExtra","/etc/config/writeapi.yaml"]
+  args: ["--config","/etc/scraper-config/scraper.yaml","--configExtra","/etc/write-config/writeapi.yaml"]
   imagePullSecrets: [ ]
   nameOverride: "scraper"
   fullnameOverride: ""
@@ -345,19 +345,19 @@ scraper:
 
   # Additional volumes on the output Deployment definition.
   volumes:
-    - name: config-volume
+    - name: writeapi-volume
       configMap:
-        name: searchengine-writeapi
-    - name: config-volume2
+        name: searchengine-scraper
+    - name: scraper-volume
       configMap:
         name: searchengine-scraper
 
   # Additional volumeMounts on the output Deployment definition.
   volumeMounts:
-    - name: config-volume
-      mountPath: /etc/config/writeapi.yaml
-    - name: config-volume2
-      mountPath: /etc/config/scraper.yaml
+    - name: writeapi-volume
+      mountPath: /etc/write-config
+    - name: scraper-volume
+      mountPath: /etc/scraper-config
 
   yamlConfig:
     scraper.yaml: |-
@@ -379,7 +379,7 @@ scraper:
         enabled: true
       scraper:
         server:
-          host: "localhost"
+          host: "searchengine-writeapi"
           port: 50077
       db:
         selectedDb:

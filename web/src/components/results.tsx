@@ -6,7 +6,7 @@ export const Results = (props: any    ) =>  {
 
     return (
         <div className="gap-2 grid grid-cols-2 sm:grid-cols-4">
-            {props.records.map((item: any, _: any) => {
+            {props.records && props.records.map((item: any, _: any) => {
                 counter++
                return (
                    <Cards key={counter} title={item.title} url={item.url}/>

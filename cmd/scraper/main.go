@@ -8,6 +8,7 @@ import (
 	"github.com/cemayan/searchengine/internal/config"
 	backendpb "github.com/cemayan/searchengine/protos/backendreq"
 	pb "github.com/cemayan/searchengine/protos/searchreq"
+	"github.com/cemayan/searchengine/trie"
 	"github.com/go-rod/rod"
 	"github.com/go-rod/rod/lib/input"
 	"github.com/go-rod/rod/lib/launcher"
@@ -15,6 +16,7 @@ import (
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 	"log"
+	"math/rand/v2"
 	"net"
 	"os"
 	"os/signal"
@@ -46,41 +48,55 @@ type SearchResponse struct {
 	Title string `json:"title"`
 }
 
+func getMs(min, max int) int {
+	return rand.IntN(max-min) + min
+}
+
 func (s server) SearchHandler(ctx context.Context, request *pb.SearchRequest) (*pb.SearchRequest, error) {
 
 	newBackendGrpcClient()
 	defer grpcCliConn.Close()
 
-	page.MustElement("textarea[name=q]").MustInput(request.GetRecord()).MustType(input.Enter)
-	page.MustWaitStable()
+	_trie := trie.New()
 
-	elements := page.MustElements("#rso span[jscontroller]:not([jscontroller='']) > a")
+	indexing := _trie.ConvertForIndexing(request.Record)
 
-	arr := []*backendpb.BackendRequestItem{}
+	for k, _ := range indexing {
+		page.MustElement("textarea[name=q]").MustInput(k).MustType(input.Enter)
+		page.MustWaitStable()
 
-	for _, element := range elements {
+		elements := page.MustElements("#rso span[jscontroller]:not([jscontroller='']) > a")
 
-		item := &backendpb.BackendRequestItem{}
+		arr := []*backendpb.BackendRequestItem{}
 
-		href, err := element.Attribute("href")
-		if err == nil {
-			item.Url = *href
+		for _, element := range elements {
+
+			item := &backendpb.BackendRequestItem{}
+
+			href, err := element.Attribute("href")
+			if err == nil {
+				item.Url = *href
+			}
+
+			title, err := element.Element("h3")
+			if err == nil {
+				item.Title = title.MustText()
+			}
+
+			arr = append(arr, item)
 		}
 
-		title, err := element.Element("h3")
-		if err == nil {
-			item.Title = title.MustText()
+		client := backendpb.NewDbServiceClient(grpcCliConn)
+
+		_, err := client.SendRequest(ctx, &backendpb.BackendRequest{Items: arr, Record: k})
+		if err != nil {
+			log.Fatalf("could not greet: %v", err)
 		}
 
-		arr = append(arr, item)
+		time.Sleep(time.Duration(getMs(100, 250)) * time.Millisecond)
 	}
 
-	client := backendpb.NewDbServiceClient(grpcCliConn)
-
-	_, err := client.SendRequest(ctx, &backendpb.BackendRequest{Items: arr, Record: request.GetRecord()})
-	if err != nil {
-		log.Fatalf("could not greet: %v", err)
-	}
+	logrus.Infoln("scraping has been completed")
 
 	return &pb.SearchRequest{}, nil
 }
