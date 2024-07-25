@@ -23,10 +23,31 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
       -
-        name: Build and push
+        name: Readapi Build and push
         uses: docker/build-push-action@v6
         with:
           context: .
           file: build/api/read/Dockerfile
           push: true
-          tags: cemayan/readapi:latest
+          tags: cemayan/readapi:v1
+      - name: Writeapi Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: build/api/write/Dockerfile
+          push: true
+          tags: cemayan/writeapi:v1
+      - name: Web app Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: build/app/Dockerfile
+          push: true
+          tags: cemayan/app:v1
+      - name: Scraper Build and push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: build/scraper/Dockerfile
+          push: true
+          tags: cemayan/scraper:v1
