@@ -22,13 +22,15 @@ import (
 )
 
 var (
-	configPath string
+	configPath string // get config yaml path as flag
 )
 
 func init() {
 	flag.StringVar(&configPath, "config", "", "Path of config yaml")
 	flag.Parse()
+	// config initializer
 	config.Init(constants.WriteApi, configPath)
+	// db initializer
 	db.Init(constants.WriteApi)
 }
 

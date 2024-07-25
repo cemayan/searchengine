@@ -25,8 +25,8 @@ import (
 )
 
 var (
-	configPath      string
-	configPathExtra string
+	configPath      string // get scraper config yaml path as flag
+	configPathExtra string // get write api config yaml path as flag
 	page            *rod.Page
 	grpcCliConn     *grpc.ClientConn
 )
@@ -35,7 +35,9 @@ func init() {
 	flag.StringVar(&configPath, "config", "", "Path of config yaml")
 	flag.StringVar(&configPathExtra, "configExtra", "", "Path of config yaml")
 	flag.Parse()
+	// config initializer
 	config.Init(constants.Scraper, configPath)
+	// db initializer
 	config.Init(constants.WriteApi, configPathExtra)
 }
 

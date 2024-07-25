@@ -11,6 +11,7 @@ import (
 
 var ctx = context.Background()
 
+// Redis represents of RedisDb Client
 type Redis struct {
 	client *redis.Client
 }
@@ -20,6 +21,8 @@ func (r Redis) GetAll() interface{} {
 	panic("implement me")
 }
 
+// Get returns an  array according to given parameters
+// In redis this method returns []interface{}
 func (r Redis) Get(dbName constants.DbName, key string, params *[]string) (interface{}, error) {
 
 	currentPath := params
@@ -39,6 +42,8 @@ func (r Redis) Get(dbName constants.DbName, key string, params *[]string) (inter
 	return val, nil
 }
 
+// Set sets data to  redis with prefix
+// for record : record, scraping results : recordmetadata
 func (r Redis) Set(dbName constants.DbName, key string, value interface{}, params *[]string) error {
 
 	currentPath := ""

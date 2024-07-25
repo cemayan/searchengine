@@ -6,7 +6,6 @@ import (
 	"github.com/cemayan/searchengine/common"
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/service"
-	"github.com/cemayan/searchengine/scraper"
 	"github.com/cemayan/searchengine/types"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -25,14 +24,6 @@ func (srv *Server) PostRecord(w http.ResponseWriter, r *http.Request) {
 
 	svc := service.NewWriteService(constants.WriteApi)
 	svc.Start(rec.Data)
-
-	_scraper := scraper.New(rec.Data)
-	err = _scraper.Start()
-	if err != nil {
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusBadRequest)
-		logrus.Error(err)
-	}
 
 	msg := fmt.Sprintf("%s record added to database successfully", rec.Data)
 	apiResp := types.ApiResponse{Msg: &msg}

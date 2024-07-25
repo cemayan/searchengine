@@ -32,7 +32,7 @@ dev-build: readapi writeapi	_scraper
 dev-run: dev-dep dev-build run
 
 
-k8s: redis-helm-install mongodb-helm-install searchengine-helm-install
+k8s: redis-helm-install  searchengine-helm-install
 k8su: searchengine-helm-uninstall
 
 
@@ -79,10 +79,6 @@ redis-helm-install:  # Install redis via helm
 	./deployment/redis/redis.sh
 redis-helm-uninstall:  # Uninstall redis via helm
 	helm uninstall redis-stack-server
-mongodb-helm-install:
-	helm repo add mongodb https://mongodb.github.io/helm-charts
-	helm upgrade community-operator mongodb/community-operator
-	kubectl apply -f deployment/mongodb/mongodbcommunity_cr.yaml
 searchengine-helm-install:  #  Deploy whole microservices to k8s
 	helm install searchengine ./deployment/searchengine
 searchengine-helm-uninstall:

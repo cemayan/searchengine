@@ -39,7 +39,7 @@ Default Endpoints for microservices:
 
 |          | ReadApi               | WriteApi              | Web App               |
 |----------|-----------------------|-----------------------|-----------------------|
-| Endpoint | http://localhost:8087 | http://localhost:8088 | http://localhost:5374 |
+| Endpoint | http://localhost:8087 | http://localhost:8088 | http://localhost:5173 |
 
 
 

@@ -14,6 +14,9 @@ type ReadService struct {
 	result      *types.SearchResponse
 }
 
+// sort sorts the resultMap
+// ex: {alan turi:0,alan turing: 5 }
+// after sorting  {alan turing:5,alan turi: 0 }
 func (rs *ReadService) sort() {
 	keys := make([]string, 0, len(rs.resultMap))
 
@@ -28,6 +31,9 @@ func (rs *ReadService) sort() {
 	rs.result = &keys
 }
 
+// GetResults returns an array  according to given query
+// ex: alan turing
+// {list:[title:"",url:""],...}
 func (rs *ReadService) GetResults(query string) map[string]interface{} {
 	currentDb := constants.Str2Db[config.GetConfig(rs.ProjectName).Db.SelectedDb.Read]
 	foundedRecords, err := db.SelectedDb(rs.ProjectName, constants.Read).Get(constants.RecordMetadata, query, nil)
@@ -37,6 +43,7 @@ func (rs *ReadService) GetResults(query string) map[string]interface{} {
 
 	var genericMap map[string]interface{}
 
+	// Since redis and mongodb return object is different we need to separate
 	if currentDb == constants.Redis {
 		castedFoundedRecords := foundedRecords.([]interface{})
 
@@ -50,6 +57,7 @@ func (rs *ReadService) GetResults(query string) map[string]interface{} {
 	return genericMap
 }
 
+// Start executes read operations for given data on selected DB
 func (rs *ReadService) Start(data *string) (*types.SearchResponse, error) {
 
 	currentDb := constants.Str2Db[config.GetConfig(rs.ProjectName).Db.SelectedDb.Read]

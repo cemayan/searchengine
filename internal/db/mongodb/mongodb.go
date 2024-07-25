@@ -14,11 +14,13 @@ import (
 
 var ctx = context.Background()
 
+// MongoDB represents of MongoDb/Redis Client
 type MongoDB struct {
 	client *mongo.Client
 	redis  *redis.Redis
 }
 
+// GetAll returns whole collectionName
 func (r MongoDB) GetAll() interface{} {
 	batchSize := int32(100)
 
@@ -32,6 +34,8 @@ func (r MongoDB) GetAll() interface{} {
 	return collections
 }
 
+// Get returns an  array according to given parameters
+// In redis this method returns map[string]interface{}
 func (r MongoDB) Get(dbName constants.DbName, key string, params *[]string) (interface{}, error) {
 	var mm map[string]interface{}
 	err := r.client.Database(constants.DbName2Str[dbName]).Collection(key).FindOne(ctx, bson.M{}).Decode(&mm)
@@ -47,6 +51,9 @@ func (r MongoDB) Get(dbName constants.DbName, key string, params *[]string) (int
 	return mm, nil
 }
 
+// Set sets data to  mongodb
+// collections =>  record : record, scraping results : recordmetadata
+// If mongodb save operation is successful this record will be saved to redis for caching
 func (r MongoDB) Set(dbName constants.DbName, key string, value interface{}, params *[]string) error {
 
 	upsert := true

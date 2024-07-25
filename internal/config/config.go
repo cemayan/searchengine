@@ -71,10 +71,6 @@ type GeneralConfig struct {
 	Web         Web       `yaml:"web"`
 }
 
-var (
-	ConfigPaths = "configs"
-)
-
 // Init unmarshalls the yaml
 func Init(projectName constants.Project, yamlPath string) {
 	var genConfig GeneralConfig

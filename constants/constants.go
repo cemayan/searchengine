@@ -4,6 +4,7 @@ const (
 	XSearchEngineQuery = "X-SearchEngine-Query"
 )
 
+// Db represents of databases
 type Db int
 
 const (
@@ -14,6 +15,7 @@ const (
 var Db2Str = map[Db]string{Redis: "redis", MongoDb: "mongodb"}
 var Str2Db = map[string]Db{"redis": Redis, "mongodb": MongoDb}
 
+// DbType represents of purpose
 type DbType int
 
 const (
@@ -41,6 +43,7 @@ const (
 	RecordMetaDataDatabase = "searchenginemetadata"
 )
 
+// DbName represents of table/collection
 type DbName int
 
 const (

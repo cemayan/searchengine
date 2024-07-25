@@ -8,6 +8,7 @@ import (
 type SchedulerService struct {
 }
 
+// Mongo2Redis writes records mongo to redis
 func (ss *SchedulerService) Mongo2Redis() {
 	allNames := db.Db[constants.Scheduler][constants.MongoDb].GetAll().([]string)
 

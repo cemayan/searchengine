@@ -17,6 +17,8 @@ type WriteService struct {
 }
 
 // TODO: add return type
+// prepareData creates a new record for each trie node
+// ConvertForIndexing(golang) => [g:[go,gol,gola,golan,golang],go:[go,gol,gola,golan,golang],...]
 func (ws *WriteService) prepareData(data string) {
 	_trie := trie.New()
 	arr := strings.Split(data, " ")
@@ -47,6 +49,8 @@ func (ws *WriteService) prepareData(data string) {
 
 }
 
+// AddRecordMetadataToDb creates a record for given scraped results
+// This methods call by grpc method
 func (ws *WriteService) AddRecordMetadataToDb(req *backendreq.BackendRequest) {
 	value := map[string]interface{}{}
 	value["items"] = req.Items
@@ -54,6 +58,8 @@ func (ws *WriteService) AddRecordMetadataToDb(req *backendreq.BackendRequest) {
 	db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.RecordMetadata, req.GetRecord(), value, nil)
 }
 
+// mergeTheMaps merges between prevMap and currentMap
+// prevMap: {go:{go:0}} currentMap: {go:{go:0,gol:0}} => {go:{go:0,gol:0}}
 func (ws *WriteService) mergeTheMaps(prevMap map[string]interface{}, currentMap map[string]int) map[string]interface{} {
 	for k, _ := range currentMap {
 		if _, ok := prevMap[k]; !ok {
@@ -62,6 +68,11 @@ func (ws *WriteService) mergeTheMaps(prevMap map[string]interface{}, currentMap 
 	}
 	return prevMap
 }
+
+// addRecordsToDb add records to db
+// each trie object adds with initial value
+// it means related record  is never selected before
+// last db object for golang  => {g:{g:0,go:0,gol:0,gola:0,golan:0,golang:0},go:{},...}
 func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 
 	for k := range records {
@@ -79,6 +90,7 @@ func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 
 		prevMap := map[string]interface{}{}
 
+		// Since redis and mongodb return object is different we need to separate
 		if _db == constants.Redis {
 
 			castedFoundedRecords := foundedRecords.([]interface{})
@@ -107,12 +119,14 @@ func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 	}
 }
 
+// increaseValue increases the value
 func (ws *WriteService) increaseValue(prevMap map[string]interface{}, rec types.SelectionRequest) error {
 
 	_db := constants.Str2Db[config.GetConfig(ws.ProjectName).Db.SelectedDb.Read]
 
 	if _, ok := prevMap[rec.SelectedKey]; ok {
 
+		// Since redis and mongodb return object is different we need to separate
 		if _db == constants.Redis {
 			flt := prevMap[rec.SelectedKey].(float64)
 			prevMap[rec.SelectedKey] = int(flt) + 1
@@ -128,6 +142,11 @@ func (ws *WriteService) increaseValue(prevMap map[string]interface{}, rec types.
 	return nil
 }
 
+// Selection selects query according to clicked value on app side
+// ex: let's assume that you are typing "go" and results looks below:
+// [go,gol,gola,golan,golang] than you click the "golang"
+// That operation means increased the current value that you clicked
+// on db: =  // last db object for golang  => {go:{go:0,gol:0,gola:0,golan:0,golang:1},...}
 func (ws *WriteService) Selection(rec types.SelectionRequest) error {
 	foundedRecords, err := db.SelectedDb(ws.ProjectName, constants.Read).Get(constants.Record, rec.Query, nil)
 	if err != nil {
