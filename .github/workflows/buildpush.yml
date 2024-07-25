@@ -27,6 +27,6 @@ jobs:
         uses: docker/build-push-action@v6
         with:
           context: .
-          file: build/api/read
+          file: build/api/read/Dockerfile
           push: true
           tags: cemayan/readapi:latest
