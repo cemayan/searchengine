@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
 	"github.com/cemayan/searchengine/internal/db"
@@ -61,6 +62,10 @@ func (rs *ReadService) GetResults(query string) map[string]interface{} {
 func (rs *ReadService) Start(data *string) (*types.SearchResponse, error) {
 
 	currentDb := constants.Str2Db[config.GetConfig(rs.ProjectName).Db.SelectedDb.Read]
+
+	if db.Db == nil {
+		return nil, errors.New("database not exist")
+	}
 
 	foundedRecords, err := db.SelectedDb(rs.ProjectName, constants.Read).Get(constants.Record, *data, nil)
 	if err != nil || foundedRecords == nil {

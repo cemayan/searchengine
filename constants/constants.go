@@ -2,6 +2,7 @@ package constants
 
 const (
 	XSearchEngineQuery = "X-SearchEngine-Query"
+	NatsEventsStream   = "events"
 )
 
 // Db represents of databases

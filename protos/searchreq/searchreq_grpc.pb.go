@@ -36,7 +36,7 @@ func NewSearcherClient(cc grpc.ClientConnInterface) SearcherClient {
 
 func (c *searcherClient) SearchHandler(ctx context.Context, in *SearchRequest, opts ...grpc.CallOption) (*SearchRequest, error) {
 	out := new(SearchRequest)
-	err := c.cc.Invoke(ctx, "/protos.Searcher/SearchHandler", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/searchreq.Searcher/SearchHandler", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func _Searcher_SearchHandler_Handler(srv interface{}, ctx context.Context, dec f
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.Searcher/SearchHandler",
+		FullMethod: "/searchreq.Searcher/SearchHandler",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(SearcherServer).SearchHandler(ctx, req.(*SearchRequest))
@@ -94,7 +94,7 @@ func _Searcher_SearchHandler_Handler(srv interface{}, ctx context.Context, dec f
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var Searcher_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "protos.Searcher",
+	ServiceName: "searchreq.Searcher",
 	HandlerType: (*SearcherServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

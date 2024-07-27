@@ -42,7 +42,7 @@ type Scheduler struct {
 	Enabled bool `yaml:"enabled"`
 }
 
-type Cache struct {
+type CacheDirect struct {
 	Enabled bool `yaml:"enabled"`
 }
 
@@ -59,16 +59,37 @@ type Web struct {
 	AllowedOrigins []string `yaml:"allowedOrigins"`
 }
 
+type Consumer struct {
+	Name   string `yaml:"name"`
+	Stream string `yaml:"stream"`
+}
+
+type Nats struct {
+	Url         string     `yaml:"url"`
+	Streams     []string   `yaml:"streams"`
+	Consumers   []Consumer `yaml:"consumers"`
+	IsJsEnabled bool       `yaml:"js"`
+}
+
+type Kafka struct {
+}
+
+type Messaging struct {
+	Nats  *Nats  `yaml:"nats"`
+	Kafka *Kafka `yaml:"kafka"`
+}
+
 // GeneralConfig represents parsed yaml values
 type GeneralConfig struct {
-	Version     int       `yaml:"version"`
-	Environment string    `yaml:"environment"`
-	Serve       Serve     `yaml:"serve"`
-	Db          Db        `yaml:"db"`
-	Scheduler   Scheduler `yaml:"scheduler"`
-	Cache       Cache     `yaml:"cache"`
-	Scraper     Scraper   `yaml:"scraper"`
-	Web         Web       `yaml:"web"`
+	Version     int         `yaml:"version"`
+	Environment string      `yaml:"environment"`
+	Serve       Serve       `yaml:"serve"`
+	Db          Db          `yaml:"db"`
+	Scheduler   Scheduler   `yaml:"scheduler"`
+	CacheDirect CacheDirect `yaml:"cacheDirect"`
+	Scraper     Scraper     `yaml:"scraper"`
+	Web         Web         `yaml:"web"`
+	Messaging   Messaging   `yaml:"messaging"`
 }
 
 // Init unmarshalls the yaml

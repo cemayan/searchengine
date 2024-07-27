@@ -5,25 +5,16 @@ serve:
 web:
   allowedOrigins:
     - "*"
-messaging:
-  nats:
-    url: nats://127.0.0.1:4222
-    js: true
-    streams:
-      - "events"
-    consumers:
-      - name: "consumer-event"
-        stream: events
-cacheDirect:
-  enabled: false
+cache:
+  enabled: true
 scraper:
   server:
     host: "localhost"
     port: 50077
 db:
   selectedDb:
-    read: mongodb
-    write: mongodb
+    read: redis
+    write: redis
   cache:
     name: "redis"
     addr: "localhost:6379"

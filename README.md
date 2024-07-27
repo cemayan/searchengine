@@ -83,12 +83,7 @@ Thus, you can connect with scraper. (If you type **Alan Turing** here, scraper m
 
 
 
-
-
-
-
-
-
+> Since redis-mock doesn't have ExpectJsonGet and ExpectJsonSet, related tests will be written  later
 
 
 

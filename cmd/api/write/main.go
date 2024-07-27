@@ -9,6 +9,7 @@ import (
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
 	"github.com/cemayan/searchengine/internal/db"
+	"github.com/cemayan/searchengine/internal/messaging"
 	"github.com/cemayan/searchengine/internal/service"
 	pb "github.com/cemayan/searchengine/protos/backendreq"
 	"github.com/sirupsen/logrus"
@@ -32,6 +33,8 @@ func init() {
 	config.Init(constants.WriteApi, configPath)
 	// db initializer
 	db.Init(constants.WriteApi)
+	// messaging initializer
+	messaging.Init(constants.WriteApi)
 }
 
 type server struct {
@@ -74,7 +77,8 @@ func main() {
 	signal.Notify(done, os.Interrupt, syscall.SIGINT, syscall.SIGTERM)
 
 	go func() {
-		if err := writeServer.ListenAndServe(ctx); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		writeServer.Configure()
+		if err := writeServer.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			logrus.Fatalf("error starting server: %s\n", err)
 		}
 	}()

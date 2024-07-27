@@ -10,10 +10,28 @@ import (
 )
 
 var ctx = context.Background()
+var Client *redis.Client
 
 // Redis represents of RedisDb Client
 type Redis struct {
 	client *redis.Client
+}
+
+func getClient(projectName constants.Project) *redis.Client {
+	c := &redis.Client{}
+
+	if Client != nil {
+		c = Client
+	} else {
+		cfg := config.GetConfig(projectName)
+		c = redis.NewClient(&redis.Options{
+			Addr:     cfg.Db.Cache.Addr,
+			Password: cfg.Db.Cache.Pass,
+			DB:       0, // use default DB
+		})
+	}
+
+	return c
 }
 
 func (r Redis) GetAll() interface{} {
@@ -61,16 +79,12 @@ func (r Redis) Set(dbName constants.DbName, key string, value interface{}, param
 }
 
 func New(projectName constants.Project) *Redis {
-	cfg := config.GetConfig(projectName)
-	rdb := redis.NewClient(&redis.Options{
-		Addr:     cfg.Db.Cache.Addr,
-		Password: cfg.Db.Cache.Pass,
-		DB:       0, // use default DB
-	})
 
-	if err := rdb.Ping(ctx).Err(); err != nil {
+	r := &Redis{client: getClient(projectName)}
+
+	if err := r.client.Ping(ctx).Err(); err != nil {
 		logrus.Errorln(err)
 	}
 
-	return &Redis{client: rdb}
+	return r
 }

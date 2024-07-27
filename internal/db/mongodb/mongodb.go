@@ -16,8 +16,9 @@ var ctx = context.Background()
 
 // MongoDB represents of MongoDb/Redis Client
 type MongoDB struct {
-	client *mongo.Client
-	redis  *redis.Redis
+	client      *mongo.Client
+	redis       *redis.Redis
+	cacheDirect bool
 }
 
 // GetAll returns whole collectionName
@@ -65,7 +66,8 @@ func (r MongoDB) Set(dbName constants.DbName, key string, value interface{}, par
 		return err
 	}
 
-	if r.redis != nil {
+	// Write data to redis directly
+	if r.cacheDirect {
 		go func() {
 			err := r.redis.Set(dbName, key, value, params)
 			if err != nil {
@@ -77,8 +79,14 @@ func (r MongoDB) Set(dbName constants.DbName, key string, value interface{}, par
 	return nil
 }
 
-func New(projectName constants.Project, redis *redis.Redis) *MongoDB {
+func New(projectName constants.Project) *MongoDB {
 	cfg := config.GetConfig(projectName)
+
+	r := &redis.Redis{}
+
+	if cfg.CacheDirect.Enabled {
+		r = redis.New(projectName)
+	}
 
 	cli, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Db.Persistent.Uri))
 
@@ -86,5 +94,5 @@ func New(projectName constants.Project, redis *redis.Redis) *MongoDB {
 		panic(errors.New("an error occurred while connecting to the database"))
 	}
 
-	return &MongoDB{client: cli, redis: redis}
+	return &MongoDB{client: cli, redis: r, cacheDirect: cfg.CacheDirect.Enabled}
 }

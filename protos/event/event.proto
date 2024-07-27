@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+option go_package = "github.com/cemayan/searchengine/protos/event";
+
+package protos;
+
+// The greeting service definition.
+service EventHandler {
+  // Sends a greeting
+  rpc SendEvent (Event) returns (Event) {}
+}
+
+message Db {
+  string key = 1;
+  bytes value = 2;
+
+}
+
+enum EventType {
+  RECORD_CREATED = 0;
+}
+
+// The request message containing the user's name.
+message Event {
+  string  id = 1;
+  EventType type = 2;
+  int64 date = 3;
+  bytes data = 4;
+}
+

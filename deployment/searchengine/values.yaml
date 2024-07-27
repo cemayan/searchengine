@@ -504,9 +504,3 @@ app:
 
 
 
-
-mongodb:
-  metrics:
-    enabled: true
-  auth:
-    enabled: false

@@ -5,7 +5,7 @@ import (
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
 	"github.com/cemayan/searchengine/internal/db/mongodb"
-	"github.com/cemayan/searchengine/internal/db/redis"
+	internalredis "github.com/cemayan/searchengine/internal/db/redis"
 	"github.com/sirupsen/logrus"
 )
 
@@ -49,22 +49,17 @@ func SelectedDb(project constants.Project, dbType constants.DbType) DB {
 func Init(projectName constants.Project) {
 	db := config.GetConfig(projectName).Db
 	schedulerConf := config.GetConfig(projectName).Scheduler
-	var cache *redis.Redis
-
-	if config.GetConfig(projectName).Cache.Enabled {
-		cache = redis.New(projectName)
-	}
 
 	if schedulerConf.Enabled {
-		Db[projectName][constants.Redis] = redis.New(projectName)
-		Db[projectName][constants.MongoDb] = mongodb.New(projectName, cache)
+		Db[projectName][constants.Redis] = internalredis.New(projectName)
+		Db[projectName][constants.MongoDb] = mongodb.New(projectName)
 	} else {
 		if db.Cache.Name == constants.Db2Str[constants.Redis] {
-			Db[projectName][constants.Redis] = redis.New(projectName)
+			Db[projectName][constants.Redis] = internalredis.New(projectName)
 		}
 
 		if db.Persistent.Name == constants.Db2Str[constants.MongoDb] {
-			Db[projectName][constants.MongoDb] = mongodb.New(projectName, cache)
+			Db[projectName][constants.MongoDb] = mongodb.New(projectName)
 		}
 
 		if db.SelectedDb.Read != "" {

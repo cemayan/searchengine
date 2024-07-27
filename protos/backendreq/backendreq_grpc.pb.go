@@ -36,7 +36,7 @@ func NewDbServiceClient(cc grpc.ClientConnInterface) DbServiceClient {
 
 func (c *dbServiceClient) SendRequest(ctx context.Context, in *BackendRequest, opts ...grpc.CallOption) (*BackendRequest, error) {
 	out := new(BackendRequest)
-	err := c.cc.Invoke(ctx, "/protos.DbService/SendRequest", in, out, opts...)
+	err := c.cc.Invoke(ctx, "/backendreq.DbService/SendRequest", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -82,7 +82,7 @@ func _DbService_SendRequest_Handler(srv interface{}, ctx context.Context, dec fu
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/protos.DbService/SendRequest",
+		FullMethod: "/backendreq.DbService/SendRequest",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
 		return srv.(DbServiceServer).SendRequest(ctx, req.(*BackendRequest))
@@ -94,7 +94,7 @@ func _DbService_SendRequest_Handler(srv interface{}, ctx context.Context, dec fu
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var DbService_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "protos.DbService",
+	ServiceName: "backendreq.DbService",
 	HandlerType: (*DbServiceServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{

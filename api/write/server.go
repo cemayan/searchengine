@@ -30,14 +30,16 @@ func corsHandler() *cors.Cors {
 	})
 }
 
-func (srv *Server) ListenAndServe(context.Context) error {
+func (srv *Server) Configure() {
 
 	// get an `http.Handler` that we can use
 	h := HandlerFromMux(srv, srv.router.router)
 	srv.router.negroni.UseHandler(h)
 
 	srv.server.Handler = corsHandler().Handler(srv.router.negroni)
+}
 
+func (srv *Server) ListenAndServe() error {
 	// And we serve HTTP until the world ends.
 	return srv.server.ListenAndServe()
 }

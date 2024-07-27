@@ -24,6 +24,9 @@ func (srv *Server) PostRecord(w http.ResponseWriter, r *http.Request) {
 
 	svc := service.NewWriteService(constants.WriteApi)
 	svc.Start(rec.Data)
+	go func() {
+		svc.PublishToNats(rec.Data)
+	}()
 
 	msg := fmt.Sprintf("%s record added to database successfully", rec.Data)
 	apiResp := types.ApiResponse{Msg: &msg}

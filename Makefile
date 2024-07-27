@@ -27,7 +27,7 @@ LDFLAGS:=-X main.Version=$(VERSION) \
 
 
 
-dev-dep: localredis localmongogb protoc # Start all services for development
+dev-dep: localredis localnats localmongodb app-dep  # Start all services for development
 dev-build: readapi writeapi	_scraper
 dev-run: dev-dep dev-build run
 
@@ -40,16 +40,22 @@ k8su: searchengine-helm-uninstall
 localredis: # Start a redis-server
 	screen -S redis -dm redis-stack-server
 
-localmongogb: # Start a mongodb
+localnats:
+	screen -S nats-server -dm nats-server -js
+
+localmongodb: # Start a mongodb
 	mongod --config /opt/homebrew/etc/mongod.conf --fork
 
 protoc: # Generate client and server code
 	 protoc --go_out=. --go_opt=paths=source_relative \
         --go-grpc_out=. --go-grpc_opt=paths=source_relative \
         protos/searchreq/searchreq.proto
-		 protoc --go_out=. --go_opt=paths=source_relative \
+	protoc --go_out=. --go_opt=paths=source_relative \
             --go-grpc_out=. --go-grpc_opt=paths=source_relative \
             protos/backendreq/backendreq.proto
+	protoc --go_out=. --go_opt=paths=source_relative \
+              --go-grpc_out=. --go-grpc_opt=paths=source_relative \
+              protos/event/event.proto
 
 readapi: # Starts reada pi.
 	@echo "  >  Building binary for ${OS}-${ARCH}"
@@ -68,11 +74,16 @@ _scraper: # Starts scraper.
 	CGO_ENABLED=${CGO} GOOS=${OS} GOARCH=${ARCH} go build -C ${PROJECT_FOLDER} -ldflags="${LDFLAGS}" \
 			-o "${BIN_FOLDER}/scraper" "${CMD_FOLDER}/scraper"
 
+app-dep: # Starts app.
+	cd web && npm install
+
 
 run: #Run whole microservices.
 	./bin/readapi --config configs/read/config.yaml & 2>/dev/null
 	./bin/writeapi --config configs/write/config.yaml & 2>/dev/null
 	./bin/scraper --config configs/scraper/config.yaml --configExtra  configs/write/config.yaml & 2>/dev/null
+	cd web && VITE_READAPI=http://localhost:8087 VITE_WRITEAPI=http://localhost:8088 npm run dev
+
 
 
 redis-helm-install:  # Install redis via helm

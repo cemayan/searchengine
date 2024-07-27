@@ -5,12 +5,22 @@ serve:
 web:
   allowedOrigins:
     - "*"
+messaging:
+  nats:
+    url: nats://127.0.0.1:4222
+    js: true
+    streams:
+      - "events"
+    consumers:
+      - name: "consumer-event"
+        stream: events
 db:
   selectedDb:
     read: redis
+    write: redis
   cache:
     name: "redis"
     addr: "localhost:6379"
   persistent:
-    name: "mongodb"
+    name: "redis"
     uri: "mongodb://localhost:27017"

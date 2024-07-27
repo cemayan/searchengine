@@ -5,7 +5,10 @@ import (
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
 	"github.com/cemayan/searchengine/internal/db"
+	"github.com/cemayan/searchengine/internal/messaging"
+	"github.com/cemayan/searchengine/protos"
 	"github.com/cemayan/searchengine/protos/backendreq"
+	pb "github.com/cemayan/searchengine/protos/event"
 	"github.com/cemayan/searchengine/trie"
 	"github.com/cemayan/searchengine/types"
 	"github.com/sirupsen/logrus"
@@ -175,6 +178,13 @@ func (ws *WriteService) Selection(rec types.SelectionRequest) error {
 
 func (ws *WriteService) Start(data string) {
 	ws.prepareData(data)
+}
+
+func (ws *WriteService) PublishToNats(data string) {
+	err := messaging.MessagingServer.Publish(constants.NatsEventsStream, protos.GetEvent([]byte(data), pb.EventType_RECORD_CREATED))
+	if err != nil {
+		logrus.Errorln("messaging server publish err", err)
+	}
 }
 
 func NewWriteService(projectName constants.Project) *WriteService {
