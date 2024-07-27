@@ -116,9 +116,19 @@ readApi:
       web:
         allowedOrigins:
           - "*"
+      messaging:
+        nats:
+          url: nats://127.0.0.1:4222
+          js: true
+          streams:
+            - "events"
+          consumers:
+            - name: "consumer-event"
+              stream: events
       db:
         selectedDb:
           read: redis
+          write: redis
         cache:
           name: "redis"
           addr: "redis-stack-server-master:6379"
@@ -251,16 +261,25 @@ writeApi:
       web:
         allowedOrigins:
           - "*"
-      cache:
-        enabled: true
+      messaging:
+        nats:
+          url: nats://searchengine-nats:4222
+          js: true
+          streams:
+            - "events"
+          consumers:
+            - name: "consumer-event"
+              stream: events
+      cacheDirect:
+        enabled: false
       scraper:
         server:
           host: "localhost"
           port: 50077
       db:
         selectedDb:
-          read: redis
-          write: redis
+          read: mongodb
+          write: mongodb
         cache:
           name: "redis"
           addr: "redis-stack-server-master:6379"
@@ -375,16 +394,25 @@ scraper:
       web:
         allowedOrigins:
           - "*"
-      cache:
-        enabled: true
+      messaging:
+        nats:
+          url: nats://searchengine-nats:4222
+          js: true
+          streams:
+            - "events"
+          consumers:
+            - name: "consumer-event"
+              stream: events
+      cacheDirect:
+        enabled: false
       scraper:
         server:
-          host: "searchengine-writeapi"
+          host: "localhost"
           port: 50077
       db:
         selectedDb:
-          read: redis
-          write: redis
+          read: mongodb
+          write: mongodb
         cache:
           name: "redis"
           addr: "redis-stack-server-master:6379"
@@ -503,4 +531,19 @@ app:
   affinity: { }
 
 
+nats:
+  natsBox:
+    enabled: false
+  config:
+    jetstream:
+      enabled: true
 
+      memoryStore:
+        enabled: true
+        maxSize: 256Mi
+
+      fileStore:
+        enabled: true
+        pvc:
+          enabled: true
+          size: 256Mi
