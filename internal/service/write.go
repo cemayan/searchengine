@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/config"
@@ -22,7 +23,7 @@ type WriteService struct {
 // TODO: add return type
 // prepareData creates a new record for each trie node
 // ConvertForIndexing(golang) => [g:[go,gol,gola,golan,golang],go:[go,gol,gola,golan,golang],...]
-func (ws *WriteService) prepareData(data string) {
+func (ws *WriteService) write(data string) []types.SEError {
 	_trie := trie.New()
 	arr := strings.Split(data, " ")
 
@@ -34,6 +35,8 @@ func (ws *WriteService) prepareData(data string) {
 		}
 	}
 
+	errorList := make([]types.SEError, 0)
+
 	if len(arr) > 1 {
 		for i := range len(arr) - 1 {
 
@@ -44,21 +47,36 @@ func (ws *WriteService) prepareData(data string) {
 				_data = strings.TrimSpace(_data)
 			}
 
-			ws.addRecordsToDb(_trie.ConvertForIndexing(_data))
+			errorList = append(errorList, ws.addRecordsToDb(_trie.ConvertForIndexing(_data))...)
 		}
 	} else if len(arr) == 1 {
-		ws.addRecordsToDb(_trie.ConvertForIndexing(data))
+		errorList = append(errorList, ws.addRecordsToDb(_trie.ConvertForIndexing(data))...)
 	}
 
+	return errorList
 }
 
 // AddRecordMetadataToDb creates a record for given scraped results
 // This methods call by grpc method
-func (ws *WriteService) AddRecordMetadataToDb(req *backendreq.BackendRequest) {
+func (ws *WriteService) AddRecordMetadataToDb(req *backendreq.BackendRequest) *types.SEError {
+
 	value := map[string]interface{}{}
 	value["items"] = req.Items
 
-	db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.RecordMetadata, req.GetRecord(), value, nil)
+	err := db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.RecordMetadata, req.GetRecord(), value, nil)
+	if err != nil {
+
+		marshal, _ := json.Marshal(value)
+
+		return &types.SEError{
+			Kind:   types.Db,
+			Key:    req.GetRecord(),
+			Value:  string(marshal),
+			DbName: constants.DbName2Str[constants.RecordMetadata],
+		}
+	}
+
+	return nil
 }
 
 // mergeTheMaps merges between prevMap and currentMap
@@ -76,22 +94,25 @@ func (ws *WriteService) mergeTheMaps(prevMap map[string]interface{}, currentMap 
 // each trie object adds with initial value
 // it means related record  is never selected before
 // last db object for golang  => {g:{g:0,go:0,gol:0,gola:0,golan:0,golang:0},go:{},...}
-func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
+func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) []types.SEError {
+
+	var dbErr []types.SEError
 
 	for k := range records {
 
-		var err error
 		currentMap := records[k]
 
 		foundedRecords, err := db.SelectedDb(ws.ProjectName, constants.Read).Get(constants.Record, k, nil)
 		if err != nil {
 			logrus.Error(err)
-			return
+			return nil
 		}
 
 		_db := constants.Str2Db[config.GetConfig(ws.ProjectName).Db.SelectedDb.Read]
 
 		prevMap := map[string]interface{}{}
+
+		var value interface{}
 
 		// Since redis and mongodb return object is different we need to separate
 		if _db == constants.Redis {
@@ -100,26 +121,39 @@ func (ws *WriteService) addRecordsToDb(records map[string]map[string]int) {
 
 			if len(castedFoundedRecords) > 0 {
 				prevMap = castedFoundedRecords[0].(map[string]interface{})
-				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.Record, k, ws.mergeTheMaps(prevMap, currentMap), nil)
+				value = ws.mergeTheMaps(prevMap, currentMap)
 			} else {
-				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.Record, k, currentMap, nil)
+				value = currentMap
 			}
 
 		} else if _db == constants.MongoDb {
 
 			if foundedRecords != nil {
 				prevMap = foundedRecords.(map[string]interface{})
-				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.Record, k, ws.mergeTheMaps(prevMap, currentMap), nil)
+				value = ws.mergeTheMaps(prevMap, currentMap)
 			} else {
-				err = db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.Record, k, currentMap, nil)
+				value = currentMap
 			}
-
 		}
+
+		err = db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.Record, k, value, nil)
 
 		if err != nil {
-			logrus.Error(err)
+
+			logrus.Errorln("an error occured while adding records to db:", err)
+
+			marshal, _ := json.Marshal(value)
+
+			dbErr = append(dbErr, types.SEError{
+				Kind:   types.Db,
+				Key:    k,
+				Value:  string(marshal),
+				DbName: constants.DbName2Str[constants.Record],
+			})
 		}
+
 	}
+	return dbErr
 }
 
 // increaseValue increases the value
@@ -176,15 +210,26 @@ func (ws *WriteService) Selection(rec types.SelectionRequest) error {
 	return nil
 }
 
-func (ws *WriteService) Start(data string) {
-	ws.prepareData(data)
+func (ws *WriteService) Write(data string) []types.SEError {
+	return ws.write(data)
 }
 
-func (ws *WriteService) PublishToNats(data string) {
-	err := messaging.MessagingServer.Publish(constants.NatsEventsStream, protos.GetEvent([]byte(data), pb.EventType_RECORD_CREATED))
+func (ws *WriteService) PublishToNats(data []byte, subj string, eventType pb.EventType, entityType pb.EntityType) {
+	err := messaging.MessagingServer.Publish(subj, protos.GetEvent(data, eventType, entityType))
 	if err != nil {
 		logrus.Errorln("messaging server publish err", err)
 	}
+
+	logrus.Debugf("%s published to nats", pb.EventType_RECORD_CREATED)
+}
+
+func (ws *WriteService) PublishErrorsToNats(subj string, seErr *types.SEError) {
+	err := messaging.MessagingServer.PublishError(subj, protos.GetError(seErr))
+	if err != nil {
+		logrus.Errorln("messaging server publish err", err)
+	}
+
+	logrus.Debugf("%s published to nats", pb.EventType_RECORD_CREATED)
 }
 
 func NewWriteService(projectName constants.Project) *WriteService {

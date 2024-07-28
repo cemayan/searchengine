@@ -13,10 +13,22 @@ This project includes below:
 - Basic web app
 
 
-![arch](assets/architecture.png)
+![arch](assets/searchengine.png)
 
 
+## Requirements
 
+- Redis Stack Server
+   - https://redis.io/docs/latest/operate/oss_and_stack/install/install-stack/
+- MongoDB
+  - https://www.mongodb.com
+- Nats server with Jetstream
+  - https://docs.nats.io/nats-concepts/jetstream
+- gRPC(protobuff)
+  -  https://protobuf.dev
+  - https://grpc.io
+
+  
 
 ## Usage
 

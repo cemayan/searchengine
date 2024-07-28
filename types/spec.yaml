@@ -48,6 +48,27 @@ components:
       type: array
       items:
        type: string
+    SEError:
+      type: object
+      properties:
+        kind:
+          type: string
+          x-go-type-skip-optional-pointer: true
+          enum:
+            - db
+            - messaging
+        error:
+          type: string
+          x-go-type-skip-optional-pointer: true
+        dbName:
+          type: string
+          x-go-type-skip-optional-pointer: true
+        key:
+          type: string
+          x-go-type-skip-optional-pointer: true
+        value:
+          type: string
+          x-go-type-skip-optional-pointer: true
     Error:
       type: object
       required:

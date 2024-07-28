@@ -92,6 +92,24 @@ func (n *Nats) Publish(subj string, message *pb.Event) error {
 	return nil
 }
 
+func (n *Nats) PublishError(subj string, _error *pb.SEError) error {
+	messageBytes, _ := proto.Marshal(_error)
+
+	if n.cfg.IsJsEnabled {
+		_, err := n.jetstream.Publish(context.TODO(), subj, messageBytes)
+		if err != nil {
+			return err
+		}
+	} else {
+		err := n.client.Publish(subj, messageBytes)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 func New(projectName constants.Project) *Nats {
 
 	m := config.GetConfig(projectName).Messaging.Nats

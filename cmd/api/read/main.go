@@ -10,7 +10,8 @@ import (
 	"github.com/cemayan/searchengine/internal/db"
 	"github.com/cemayan/searchengine/internal/messaging"
 	"github.com/cemayan/searchengine/internal/service"
-	pb "github.com/cemayan/searchengine/protos/event"
+	backendreqpb "github.com/cemayan/searchengine/protos/backendreq"
+	eventpb "github.com/cemayan/searchengine/protos/event"
 	"github.com/nats-io/nats.go/jetstream"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/protobuf/proto"
@@ -37,17 +38,41 @@ func init() {
 
 }
 
-func subscribeToNats() {
+func subscribeToNatsEvents() {
 
 	ws := service.WriteService{ProjectName: constants.ReadApi}
 
 	subscribe := messaging.MessagingServer.Subscribe(constants.NatsEventsStream, "consumer-event")
 
 	subscribe.Consume(func(msg jetstream.Msg) {
-		var evt pb.Event
-		proto.Unmarshal(msg.Data(), &evt)
+		var event eventpb.Event
+		proto.Unmarshal(msg.Data(), &event)
 
-		ws.Start(string(evt.Data))
+		if event.EntityType == eventpb.EntityType_Record {
+
+			for _, err := range ws.Write(string(event.Data)) {
+
+				go func() {
+					ws.PublishErrorsToNats(constants.NatsErrorsStream, &err)
+				}()
+
+			}
+
+		} else if event.EntityType == eventpb.EntityType_RecordMetadata {
+
+			var br backendreqpb.BackendRequest
+			proto.Unmarshal(event.Data, &br)
+
+			if err := ws.AddRecordMetadataToDb(&br); err != nil {
+
+				logrus.Errorln("Failed to add metadata to db:", err)
+
+				go func() {
+					ws.PublishErrorsToNats(constants.NatsErrorsStream, err)
+				}()
+			}
+		}
+
 		msg.Ack()
 	})
 }
@@ -56,7 +81,7 @@ func main() {
 
 	server := read.NewServer()
 
-	subscribeToNats()
+	subscribeToNatsEvents()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 

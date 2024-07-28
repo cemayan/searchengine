@@ -12,6 +12,7 @@ var MessagingServer Messaging
 
 type Messaging interface {
 	Publish(subj string, message *pb.Event) error
+	PublishError(subj string, error *pb.SEError) error
 	Subscribe(streamName string, consumerName string) jetstream.Consumer
 	DeleteStream(name string)
 }
