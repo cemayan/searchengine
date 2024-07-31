@@ -11,14 +11,16 @@ func (t *trie) ConvertForIndexing(data string) map[string]map[string]int {
 
 	lastMap := make(map[string]map[string]int)
 
-	for i := 1; i <= len(data); i++ {
+	for i := 1; i <= len(data)-1; i++ {
+		s := string([]rune(data)[0:i])
+
 		recordsMap := make(map[string]int)
-		array := t.SearchByPrefix(data[0:i])
+		array := t.SearchByPrefix(s)
 		for _, v := range array {
 			recordsMap[v] = 0
 		}
 
-		lastMap[data[0:i]] = recordsMap
+		lastMap[s] = recordsMap
 	}
 
 	return lastMap

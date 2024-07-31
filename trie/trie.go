@@ -47,7 +47,7 @@ func (t *trie) Insert(word string) {
 func (t *trie) insert(word string, root *trieNode) {
 
 	insertCounter++
-	currentWord := word[0:insertCounter]
+	currentWord := string([]rune(word)[0:insertCounter])
 
 	// empty node
 	node := &trieNode{make(map[string]*trieNode), false}
@@ -65,7 +65,7 @@ func (t *trie) insert(word string, root *trieNode) {
 	// add new children to current node
 	root.children[currentWord] = node
 
-	if len(word) != insertCounter {
+	if len(word)-1 != insertCounter {
 		// recursion until reaching to last word
 		// example: tea || t -> te -> tea
 		t.insert(word, root.children[currentWord])
@@ -108,12 +108,12 @@ func (t *trie) traversalSearch(node *trieNode) {
 func (t *trie) search(prefix string, root *trieNode, arr []string) []string {
 
 	searchCounter++
-	currentWord := prefix[0:searchCounter]
+	currentWord := string([]rune(prefix)[0:searchCounter])
 
 	n := root.children[currentWord]
 
 	//This condition for reach the actual node
-	if searchCounter != len(prefix) {
+	if (searchCounter != len(prefix)-1) && len(prefix) != 1 {
 		if n != nil {
 			arr = t.search(prefix, n, nil)
 		}
