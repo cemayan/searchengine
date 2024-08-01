@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "projection.fullname" . }}
+  labels:
+    {{- include "projection.labels" . | nindent 4 }}
+spec:
+  {{- if not .Values.projection.autoscaling.enabled }}
+  replicas: {{ .Values.projection.replicaCount }}
+  {{- end }}
+  selector:
+    matchLabels:
+      {{- include "projection.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      {{- with .Values.projection.podAnnotations }}
+      annotations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      labels:
+        {{- include "projection.labels" . | nindent 8 }}
+        {{- with .Values.projection.podLabels }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+    spec:
+      {{- with .Values.projection.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      serviceAccountName: {{ include "projection.serviceAccountName" . }}
+      securityContext:
+        {{- toYaml .Values.projection.podSecurityContext | nindent 8 }}
+      containers:
+        - name: {{ .Values.projection.name }}
+          securityContext:
+            {{- toYaml .Values.projection.securityContext | nindent 12 }}
+          image: "{{ .Values.projection.image.repository }}:{{ .Values.projection.image.tag | default .Chart.AppVersion }}"
+          imagePullPolicy: {{ .Values.projection.image.pullPolicy }}
+          args:
+          {{  range .Values.projection.args  }}
+           - {{ . }}
+          {{- end }}
+          env:
+          {{- range .Values.projection.envs }}
+            - name: {{ .name }}
+              value: {{ .value }}
+          {{- end }}
+          ports:
+                {{- range .Values.projection.service.ports }}
+            - name: {{ .name}}
+              containerPort: {{ .port }}
+              protocol: TCP
+            {{- end}}
+          livenessProbe:
+            {{- toYaml .Values.projection.livenessProbe | nindent 12 }}
+          readinessProbe:
+            {{- toYaml .Values.projection.readinessProbe | nindent 12 }}
+          resources:
+            {{- toYaml .Values.projection.resources | nindent 12 }}
+          {{- with .Values.projection.volumeMounts }}
+          volumeMounts:
+            {{- toYaml . | nindent 12 }}
+          {{- end }}
+      {{- with .Values.projection.volumes }}
+      volumes:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.projection.nodeSelector }}
+      nodeSelector:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.projection.affinity }}
+      affinity:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.projection.tolerations }}
+      tolerations:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
