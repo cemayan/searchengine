@@ -28,7 +28,7 @@ LDFLAGS:=-X main.Version=$(VERSION) \
 
 
 dev-dep: localredis localnats localmongodb app-dep  # Start all services for development
-dev-build: readapi writeapi	_scraper
+dev-build: readapi writeapi	_scraper projection
 dev-run: dev-dep dev-build run
 
 
@@ -69,6 +69,12 @@ writeapi: # Starts write api.
 			-o "${BIN_FOLDER}/writeapi" "${CMD_FOLDER}/api/write"
 
 
+projection: # Starts write api.
+	@echo "  >  Building binary for ${OS}-${ARCH}"
+	CGO_ENABLED=${CGO} GOOS=${OS} GOARCH=${ARCH} go build -C ${PROJECT_FOLDER} -ldflags="${LDFLAGS}" \
+			-o "${BIN_FOLDER}/projection" "${CMD_FOLDER}/api/projection"
+
+
 _scraper: # Starts scraper.
 	@echo "  >  Building binary for ${OS}-${ARCH}"
 	CGO_ENABLED=${CGO} GOOS=${OS} GOARCH=${ARCH} go build -C ${PROJECT_FOLDER} -ldflags="${LDFLAGS}" \
@@ -82,6 +88,7 @@ run: #Run whole microservices.
 	./bin/readapi --config configs/read/config.yaml & 2>/dev/null
 	./bin/writeapi --config configs/write/config.yaml & 2>/dev/null
 	./bin/scraper --config configs/scraper/config.yaml --configExtra  configs/write/config.yaml & 2>/dev/null
+	./bin/projection --config configs/write/config.yaml & 2>/dev/null
 	cd web && VITE_READAPI=http://localhost:8087 VITE_WRITEAPI=http://localhost:8088 npm run dev
 
 

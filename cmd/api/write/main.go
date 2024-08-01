@@ -12,10 +12,8 @@ import (
 	"github.com/cemayan/searchengine/internal/messaging"
 	"github.com/cemayan/searchengine/internal/service"
 	pb "github.com/cemayan/searchengine/protos/backendreq"
-	eventpb "github.com/cemayan/searchengine/protos/event"
 	"github.com/sirupsen/logrus"
 	"google.golang.org/grpc"
-	"google.golang.org/protobuf/proto"
 	"net"
 	"net/http"
 	"os"
@@ -56,16 +54,6 @@ func (s server) SendRequest(ctx context.Context, request *pb.BackendRequest) (*p
 
 		return nil, errors.New("an error occurred while adding record metadata to db")
 	}
-
-	marshal, err := proto.Marshal(request)
-	if err != nil {
-		logrus.Errorln("an error occurred while marshalling request:", err)
-		return nil, err
-	}
-
-	go func() {
-		svc.PublishToNats(marshal, constants.NatsEventsStream, eventpb.EventType_RECORDMETADATA_CREATED, eventpb.EntityType_RecordMetadata)
-	}()
 
 	return &pb.BackendRequest{Items: request.Items}, nil
 }

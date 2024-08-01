@@ -17,7 +17,6 @@ func init() {
 	dbMap := make(map[constants.Project]map[constants.Db]DB)
 	dbMap[constants.ReadApi] = make(map[constants.Db]DB)
 	dbMap[constants.WriteApi] = make(map[constants.Db]DB)
-	dbMap[constants.Scheduler] = make(map[constants.Db]DB)
 	Db = dbMap
 }
 

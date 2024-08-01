@@ -63,14 +63,14 @@ func (ws *WriteService) AddRecordMetadataToDb(req *backendreq.BackendRequest) *t
 	value := map[string]interface{}{}
 	value["items"] = req.Items
 
-	err := db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.RecordMetadata, req.GetRecord(), value, nil)
+	err := db.SelectedDb(ws.ProjectName, constants.Write).Set(constants.RecordMetadata, req.GetKey(), value, nil)
 	if err != nil {
 
 		marshal, _ := json.Marshal(value)
 
 		return &types.SEError{
 			Kind:   types.Db,
-			Key:    req.GetRecord(),
+			Key:    req.GetKey(),
 			Value:  string(marshal),
 			DbName: constants.DbName2Str[constants.RecordMetadata],
 		}
@@ -215,7 +215,7 @@ func (ws *WriteService) Write(data string) []types.SEError {
 }
 
 func (ws *WriteService) PublishToNats(data []byte, subj string, eventType pb.EventType, entityType pb.EntityType) {
-	err := messaging.MessagingServer.Publish(subj, protos.GetEvent(data, eventType, entityType))
+	err := messaging.MessagingServer[ws.ProjectName][constants.Nats].Publish(subj, protos.GetEvent(data, eventType, entityType))
 	if err != nil {
 		logrus.Errorln("messaging server publish err", err)
 	}
@@ -224,7 +224,7 @@ func (ws *WriteService) PublishToNats(data []byte, subj string, eventType pb.Eve
 }
 
 func (ws *WriteService) PublishErrorsToNats(subj string, seErr *types.SEError) {
-	err := messaging.MessagingServer.PublishError(subj, protos.GetError(seErr))
+	err := messaging.MessagingServer[ws.ProjectName][constants.Nats].PublishError(subj, protos.GetError(seErr))
 	if err != nil {
 		logrus.Errorln("messaging server publish err", err)
 	}

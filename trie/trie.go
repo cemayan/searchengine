@@ -7,7 +7,7 @@ const (
 )
 
 var (
-	insertCounter = 0
+	insertCounter = 1
 	searchCounter = 0
 	deleteCounter = 0
 	depthCounter  = 1
@@ -40,13 +40,12 @@ func (t *trie) Insert(word string) {
 
 	t.insert(last, t.root)
 	// For another insert operation insertCounter must be reset.
-	insertCounter = 0
+	insertCounter = 1
 }
 
 // insert inserts new word to trie
 func (t *trie) insert(word string, root *trieNode) {
 
-	insertCounter++
 	currentWord := string([]rune(word)[0:insertCounter])
 
 	// empty node
@@ -65,9 +64,10 @@ func (t *trie) insert(word string, root *trieNode) {
 	// add new children to current node
 	root.children[currentWord] = node
 
-	if len(word)-1 != insertCounter {
+	if len(word) != insertCounter {
 		// recursion until reaching to last word
 		// example: tea || t -> te -> tea
+		insertCounter++
 		t.insert(word, root.children[currentWord])
 	}
 }
@@ -107,14 +107,14 @@ func (t *trie) traversalSearch(node *trieNode) {
 
 func (t *trie) search(prefix string, root *trieNode, arr []string) []string {
 
-	searchCounter++
 	currentWord := string([]rune(prefix)[0:searchCounter])
 
 	n := root.children[currentWord]
 
 	//This condition for reach the actual node
-	if (searchCounter != len(prefix)-1) && len(prefix) != 1 {
+	if searchCounter != len(prefix) {
 		if n != nil {
+			searchCounter++
 			arr = t.search(prefix, n, nil)
 		}
 	} else {
@@ -135,7 +135,7 @@ func (t *trie) search(prefix string, root *trieNode, arr []string) []string {
 // example: t -> tea && t -> ten  => tea,ten
 func (t *trie) SearchByPrefix(prefix string) []string {
 	// For another search operation searchCounter and searchResults must be reset.
-	searchCounter = 0
+	searchCounter = 1
 	searchResults = map[string]struct{}{}
 	return t.search(prefix, t.root, nil)
 }

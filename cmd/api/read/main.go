@@ -42,7 +42,7 @@ func subscribeToNatsEvents() {
 
 	ws := service.WriteService{ProjectName: constants.ReadApi}
 
-	subscribe := messaging.MessagingServer.Subscribe(constants.NatsEventsStream, "consumer-event")
+	subscribe := messaging.MessagingServer[constants.ReadApi][constants.Nats].Subscribe(constants.NatsEventsStream, "consumer-event")
 
 	subscribe.Consume(func(msg jetstream.Msg) {
 		var event eventpb.Event
@@ -61,7 +61,8 @@ func subscribeToNatsEvents() {
 		} else if event.EntityType == eventpb.EntityType_RecordMetadata {
 
 			var br backendreqpb.BackendRequest
-			proto.Unmarshal(event.Data, &br)
+			err := proto.Unmarshal(event.Data, &br)
+			logrus.Errorln(err)
 
 			if err := ws.AddRecordMetadataToDb(&br); err != nil {
 

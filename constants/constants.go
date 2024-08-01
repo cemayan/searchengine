@@ -4,7 +4,19 @@ const (
 	XSearchEngineQuery = "X-SearchEngine-Query"
 	NatsEventsStream   = "events"
 	NatsErrorsStream   = "errors"
+	MongoDbDatabase    = "searchengine"
+	MongoDbRowKey      = "key"
 )
+
+type Messaging int
+
+const (
+	Nats Messaging = iota + 1
+	Kafka
+)
+
+var Messaging2Str = map[Messaging]string{Nats: "nats", Kafka: "kafka"}
+var Str2Messaging = map[string]Messaging{"nats": Nats, "kafka": Kafka}
 
 // Db represents of databases
 type Db int
@@ -32,11 +44,11 @@ type Project int
 const (
 	ReadApi Project = iota + 1
 	WriteApi
-	Scheduler
 	Scraper
+	Projection
 )
 
-var ProjectMap = map[Project]string{ReadApi: "read", WriteApi: "write", Scheduler: "scheduler", Scraper: "scraper"}
+var ProjectMap = map[Project]string{ReadApi: "read", WriteApi: "write", Scraper: "scraper", Projection: "projection"}
 
 const (
 	RecordMetaDataPrefix   = "recordmetadata"

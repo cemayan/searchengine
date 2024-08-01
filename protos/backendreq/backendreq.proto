@@ -19,7 +19,7 @@ message BackendRequestItem {
 
 // The request message containing the user's name.
 message BackendRequest {
-  string record = 1;
-  repeated BackendRequestItem items = 2;
+  string key = 2;
+  repeated BackendRequestItem items = 3;
 }
 

@@ -32,6 +32,7 @@ type Db struct {
 type DbConfig struct {
 	Name string `yaml:"name"`
 	Uri  string `yaml:"uri"`
+	Rs   string `yaml:"rs"`
 	Addr string `yaml:"addr"`
 	Port int    `yaml:"port"`
 	User string `yaml:"user"`

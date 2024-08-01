@@ -16,11 +16,11 @@ messaging:
         stream: events
 db:
   selectedDb:
-    read: redis
+    read: mongodb
     write: redis
   cache:
     name: "redis"
     addr: "localhost:6379"
   persistent:
-    name: "redis"
+    name: "mongodb"
     uri: "mongodb://localhost:27017"

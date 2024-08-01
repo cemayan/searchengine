@@ -39,7 +39,8 @@ func (r MongoDB) GetAll() interface{} {
 // In redis this method returns map[string]interface{}
 func (r MongoDB) Get(dbName constants.DbName, key string, params *[]string) (interface{}, error) {
 	var mm map[string]interface{}
-	err := r.client.Database(constants.DbName2Str[dbName]).Collection(key).FindOne(ctx, bson.M{}).Decode(&mm)
+	filter := bson.D{{constants.MongoDbRowKey, key}}
+	err := r.client.Database(constants.MongoDbDatabase).Collection(constants.DbName2Str[dbName]).FindOne(ctx, filter).Decode(&mm)
 
 	if err != nil {
 		if err.Error() != "document is nil" || err.Error() != "mongo: no documents in result" {
@@ -58,9 +59,27 @@ func (r MongoDB) Get(dbName constants.DbName, key string, params *[]string) (int
 func (r MongoDB) Set(dbName constants.DbName, key string, value interface{}, params *[]string) error {
 
 	upsert := true
-	update := bson.D{{"$set", value}}
 
-	_, err := r.client.Database(constants.DbName2Str[dbName]).Collection(key).UpdateOne(ctx, bson.D{}, update,
+	row := map[string]interface{}{}
+
+	if trieValue, ok := value.(map[string]int); ok {
+		for k, v := range trieValue {
+			row[k] = v
+		}
+	}
+
+	if trieValue, ok := value.(map[string]interface{}); ok {
+		for k, v := range trieValue {
+			row[k] = v
+		}
+	}
+
+	row["key"] = key
+
+	update := bson.D{{"$set", row}}
+	filter := bson.D{{constants.MongoDbRowKey, key}}
+
+	_, err := r.client.Database(constants.MongoDbDatabase).Collection(constants.DbName2Str[dbName]).UpdateOne(ctx, filter, update,
 		&options.UpdateOptions{Upsert: &upsert})
 	if err != nil {
 		return err
@@ -88,7 +107,7 @@ func New(projectName constants.Project) *MongoDB {
 		r = redis.New(projectName)
 	}
 
-	cli, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Db.Persistent.Uri))
+	cli, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.Db.Persistent.Uri), options.Client().SetReplicaSet(cfg.Db.Persistent.Rs))
 
 	if err != nil {
 		panic(errors.New("an error occurred while connecting to the database"))

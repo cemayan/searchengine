@@ -6,7 +6,6 @@ import (
 	"github.com/cemayan/searchengine/common"
 	"github.com/cemayan/searchengine/constants"
 	"github.com/cemayan/searchengine/internal/service"
-	pb "github.com/cemayan/searchengine/protos/event"
 	"github.com/cemayan/searchengine/types"
 	"github.com/sirupsen/logrus"
 	"net/http"
@@ -32,10 +31,6 @@ func (srv *Server) PostRecord(w http.ResponseWriter, r *http.Request) {
 		}()
 
 	}
-
-	go func() {
-		svc.PublishToNats([]byte(rec.Data), constants.NatsEventsStream, pb.EventType_RECORD_CREATED, pb.EntityType_Record)
-	}()
 
 	msg := fmt.Sprintf("%s record added to database successfully", rec.Data)
 	apiResp := types.ApiResponse{Msg: &msg}

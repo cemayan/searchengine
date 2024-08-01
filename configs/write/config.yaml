@@ -30,3 +30,4 @@ db:
   persistent:
     name: "mongodb"
     uri: "mongodb://localhost:27017"
+    rs: "rs"

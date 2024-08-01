@@ -8,7 +8,15 @@ import (
 	"github.com/nats-io/nats.go/jetstream"
 )
 
-var MessagingServer Messaging
+var MessagingServer map[constants.Project]map[constants.Messaging]Messaging
+
+func init() {
+	messagingMap := make(map[constants.Project]map[constants.Messaging]Messaging)
+	messagingMap[constants.Projection] = make(map[constants.Messaging]Messaging)
+	messagingMap[constants.WriteApi] = make(map[constants.Messaging]Messaging)
+	messagingMap[constants.ReadApi] = make(map[constants.Messaging]Messaging)
+	MessagingServer = messagingMap
+}
 
 type Messaging interface {
 	Publish(subj string, message *pb.Event) error
@@ -21,7 +29,9 @@ func Init(projectName constants.Project) {
 	m := config.GetConfig(projectName).Messaging
 
 	if m.Nats != nil {
-		MessagingServer = nats.New(projectName)
+
+		MessagingServer[projectName][constants.Nats] = nats.New(projectName)
+
 	} else if m.Kafka != nil {
 		//TODO
 	}
